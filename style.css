@@ -1,121 +1,54 @@
-:root {
-  --primary-color: #E5A1AA; /* Un rosa suave y elegante */
-  --secondary-color: #B4869F; /* Un tono lavanda */
-  --text-color: #4A4A4A; /* Gris oscuro para el texto */
-  --bg-color: #FFF8F7; /* Un fondo casi blanco con un toque rosado */
-  --white: #FFFFFF;
-  --border-color: #EAEAEA;
+/* ================================== */
+/* NUEVOS ESTILOS PARA LA VISTA DE SERVICIOS */
+/* ================================== */
+
+.service-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  margin: 0;
-}
-
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.main-header {
-  text-align: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.main-header h1 {
-  margin: 0;
-  color: var(--primary-color);
-  font-weight: 300;
-  letter-spacing: 2px;
-}
-.main-header a {
-  text-decoration: none;
-}
-
-/* Estilos de las Vistas */
-.view {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.view h2 {
-  text-align: center;
-  font-weight: 400;
-  margin-bottom: 30px;
-}
-
-.back-link {
-  display: inline-flex;
+.service-card {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  color: var(--secondary-color);
-  margin-bottom: 20px;
-  font-weight: 500;
-}
-.back-link:hover {
-  color: var(--primary-color);
-}
-
-/* Vista de Categorías */
-.category-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.category-card {
-  display: block;
+  justify-content: space-between;
   background-color: var(--white);
+  padding: 20px;
   border-radius: 12px;
-  overflow: hidden;
   text-decoration: none;
   color: var(--text-color);
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.category-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+.service-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
 }
 
-.category-card-image {
-  width: 100%;
-  height: 180px;
-  object-fit: cover;
-}
-
-.category-card-title {
-  padding: 20px;
-  font-size: 1.2em;
+.service-card-info h4 {
+  margin: 0 0 5px 0;
   font-weight: 500;
+  font-size: 1.1em;
 }
 
-/* Spinner de Carga */
-.loading-spinner {
-  border: 4px solid var(--border-color);
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  margin: 50px auto;
+.service-card-info p {
+  margin: 0;
+  color: #888;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.service-card-arrow i {
+  font-size: 1.5em;
+  color: var(--primary-color);
+}
+
+/* Estilo para mensajes de error */
+.error-message {
+    color: #dc3545;
+    font-weight: bold;
+    text-align: center;
+    padding: 20px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
 }
