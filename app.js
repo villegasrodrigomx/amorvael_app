@@ -3,31 +3,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let allData = null; // Guardaremos aquí todos los datos de la app
 
   // --- API ---
-  // El endpoint de nuestra función de Netlify que actúa como proxy
   const API_ENDPOINT = '/.netlify/functions/engine';
 
   // --- ROUTER ---
-  // Decide qué vista mostrar basándose en la URL
   function router() {
     const params = new URLSearchParams(window.location.search);
     const category = params.get('category');
     const serviceId = params.get('service');
 
     if (serviceId) {
-      // Lógica para mostrar detalles del servicio (la haremos más adelante)
+      // Lógica para mostrar detalles del servicio (la haremos en el siguiente paso)
       console.log('Mostrar detalles para el servicio:', serviceId);
     } else if (category) {
-      // Lógica para mostrar la lista de servicios de una categoría (la haremos más adelante)
-      console.log('Mostrar servicios para la categoría:', category);
+      // ¡NUEVA LÓGICA! Mostrar la lista de servicios de una categoría
+      renderServicesView(category);
     } else {
-      // Por defecto, mostrar la página de inicio con las categorías
       renderCategoriesView();
     }
   }
 
   // --- RENDERIZADO DE VISTAS ---
 
-  // Función para limpiar el contenedor y mostrar una nueva vista
   function renderView(templateId) {
     const template = document.getElementById(templateId);
     if (!template) return null;
@@ -37,35 +33,36 @@ document.addEventListener('DOMContentLoaded', () => {
     return appContainer.querySelector('.view');
   }
 
-  // Renderiza la vista de categorías
   async function renderCategoriesView() {
     const view = renderView('template-categories-view');
     if (!view) return;
 
     const categoryGrid = view.querySelector('.category-grid');
-    categoryGrid.innerHTML = ''; // Limpiar
+    categoryGrid.innerHTML = '';
     
-    // Mostramos un spinner de carga mientras obtenemos los datos
     const loadingSpinner = document.getElementById('template-loading').content.cloneNode(true);
     categoryGrid.appendChild(loadingSpinner);
 
     try {
-      // Si no tenemos los datos, los pedimos. Si ya los tenemos, los reusamos.
       if (!allData) {
         allData = await fetchAppData();
       }
 
-      // Extraemos las categorías únicas de la lista de servicios
       const categories = [...new Set(allData.services.map(s => s.categoria))];
       
-      categoryGrid.innerHTML = ''; // Limpiamos el spinner
+      categoryGrid.innerHTML = '';
 
       categories.forEach(categoryName => {
         const card = document.createElement('a');
         card.className = 'category-card';
-        card.href = `?category=${encodeURIComponent(categoryName)}`;
+        // IMPORTANTE: Ahora usamos un event listener para manejar la navegación
+        card.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Actualizamos la URL y llamamos al router para cambiar de vista
+            history.pushState({}, '', `?category=${encodeURIComponent(categoryName)}`);
+            router();
+        });
         
-        // Asignamos una imagen por defecto a cada categoría
         const categoryImage = getCategoryImage(categoryName);
 
         card.innerHTML = `
@@ -78,13 +75,68 @@ document.addEventListener('DOMContentLoaded', () => {
       });
 
     } catch (error) {
-      categoryGrid.innerHTML = `<p>Error al cargar las categorías: ${error.message}</p>`;
+      categoryGrid.innerHTML = `<p class="error-message">Error al cargar las categorías: ${error.message}</p>`;
     }
   }
 
+  // --- ¡NUEVA FUNCIÓN! ---
+  // Renderiza la vista que muestra la lista de servicios para una categoría
+  async function renderServicesView(categoryName) {
+    const view = renderView('template-services-view');
+    if (!view) return;
+
+    // Ponemos el título de la categoría en la vista
+    view.querySelector('.view-title').textContent = categoryName;
+    
+    // Configuramos el botón de "Volver"
+    view.querySelector('.back-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        history.pushState({}, '', '/');
+        router();
+    });
+
+    const serviceList = view.querySelector('.service-list');
+    serviceList.innerHTML = '';
+    const loadingSpinner = document.getElementById('template-loading').content.cloneNode(true);
+    serviceList.appendChild(loadingSpinner);
+
+    try {
+      if (!allData) {
+        allData = await fetchAppData();
+      }
+
+      // Filtramos solo los servicios que pertenecen a esta categoría
+      const servicesInCategory = allData.services.filter(s => s.categoria === categoryName);
+      
+      serviceList.innerHTML = '';
+
+      servicesInCategory.forEach(service => {
+        const serviceCard = document.createElement('a');
+        serviceCard.className = 'service-card';
+        serviceCard.href = `?service=${service.id}`;
+        // Por ahora, el enlace no hará nada, lo implementaremos en el siguiente paso
+        serviceCard.addEventListener('click', (e) => e.preventDefault());
+
+        serviceCard.innerHTML = `
+          <div class="service-card-info">
+            <h4>${service.nombre}</h4>
+            <p>${service.duracion} min · $${service.precio.toLocaleString('es-MX')} MXN</p>
+          </div>
+          <div class="service-card-arrow">
+            <i class="ph-bold ph-caret-right"></i>
+          </div>
+        `;
+        serviceList.appendChild(serviceCard);
+      });
+
+    } catch (error) {
+      serviceList.innerHTML = `<p class="error-message">Error al cargar los servicios: ${error.message}</p>`;
+    }
+  }
+
+
   // --- FUNCIONES AUXILIARES ---
 
-  // Pide todos los datos iniciales a nuestro backend
   async function fetchAppData() {
     const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
     if (!response.ok) {
@@ -97,8 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return data;
   }
   
-  // Devuelve una imagen para cada categoría.
-  // **TU TAREA:** Reemplaza estas URLs con las de tus propias fotos.
   function getCategoryImage(categoryName) {
     const images = {
       'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
@@ -106,11 +156,11 @@ document.addEventListener('DOMContentLoaded', () => {
       'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
       'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg',
     };
-    // Devuelve la imagen de la categoría o una por defecto si no la encuentra
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
   }
 
   // --- INICIAR LA APP ---
   router();
+  // Escuchar los cambios en la URL (botones de atrás/adelante del navegador)
+  window.addEventListener('popstate', router);
 });
-
