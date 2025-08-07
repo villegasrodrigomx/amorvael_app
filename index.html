@@ -7,7 +7,6 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#E5A1AA">
     <link rel="stylesheet" href="style.css">
-    <!-- Iconos de Phosphor Icons para una mejor UI -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
@@ -24,7 +23,6 @@
 
     <!-- ====================================================== -->
     <!-- PLANTILLAS DE VISTAS (Templates)                       -->
-    <!-- Usaremos JavaScript para clonar y mostrar estas vistas -->
     <!-- ====================================================== -->
     <template id="template-loading">
         <div class="loading-spinner"></div>
@@ -33,9 +31,7 @@
     <template id="template-categories-view">
         <div class="view">
             <h2>Nuestros Servicios</h2>
-            <div class="category-grid">
-                <!-- Las categorías se cargarán aquí -->
-            </div>
+            <div class="category-grid"></div>
         </div>
     </template>
 
@@ -43,9 +39,7 @@
         <div class="view">
             <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
             <h2 class="view-title"></h2>
-            <div class="service-list">
-                <!-- Los servicios de la categoría se cargarán aquí -->
-            </div>
+            <div class="service-list"></div>
         </div>
     </template>
 
@@ -54,21 +48,36 @@
             <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Servicios</a>
             <div class="service-detail-card">
                 <div class="service-gallery">
-                    <!-- Fotos del servicio aquí -->
+                    <img class="service-main-image" src="https://placehold.co/800x600/E5A1AA/FFFFFF?text=Amor-Vael" alt="Imagen del servicio">
                 </div>
                 <div class="service-info">
                     <h2 class="view-title"></h2>
                     <p class="service-price"></p>
                     <p class="service-duration"></p>
-                    <p class="service-description"></p>
-                    <button class="cta-button">Agendar Cita</button>
+                    <p class="service-description">Aquí va una descripción detallada del servicio, explicando sus beneficios, el proceso y para quién es ideal.</p>
+                    <button class="cta-button" id="show-calendar-btn">Agendar Cita</button>
                 </div>
             </div>
+            
             <div class="booking-section" style="display: none;">
-                <h3>Selecciona Fecha y Hora</h3>
-                <!-- Aquí irá el calendario de disponibilidad -->
+                <h3>Selecciona una Fecha</h3>
                 <div class="calendar-container">
-                    <!-- Contenido del calendario... -->
+                    <div class="calendar-header">
+                        <button id="prevMonth">&lt;</button>
+                        <h4 id="monthYear"></h4>
+                        <button id="nextMonth">&gt;</button>
+                    </div>
+                    <div class="calendar-grid weekdays">
+                        <div class="weekday">Dom</div><div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div><div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays"></div>
+                </div>
+
+                <div class="slots-container" style="display: none;">
+                    <h4>Horarios Disponibles</h4>
+                    <div id="availableSlots" class="slots-grid">
+                        <!-- Los horarios disponibles se cargarán aquí -->
+                    </div>
                 </div>
             </div>
         </div>
