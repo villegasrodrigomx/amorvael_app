@@ -219,13 +219,15 @@ document.addEventListener('DOMContentLoaded', () => {
             availableSlotsEl.innerHTML = '';
 
             if (data.status === 'success' && data.availableSlots.length > 0) {
-                data.availableSlots.forEach(slotTime => {
+                // El array ya viene ordenado desde el backend, pero lo re-ordenamos por si acaso.
+                data.availableSlots.sort().forEach(slotTime24h => {
                     const slotEl = document.createElement('div');
                     slotEl.className = 'slot';
-                    slotEl.textContent = slotTime;
+                    // --- CAMBIO CLAVE ---
+                    // Convertimos el formato 24h a 12h para mostrarlo al usuario.
+                    slotEl.textContent = formatTime12h(slotTime24h);
                     slotEl.addEventListener('click', () => {
-                        // Lógica para el paso final de la reserva (Fase 4)
-                        alert(`Has seleccionado ${slotTime} el ${date.toLocaleDateString('es-MX')}. ¡Listo para el siguiente paso!`);
+                        alert(`Has seleccionado ${formatTime12h(slotTime24h)} el ${date.toLocaleDateString('es-MX')}. ¡Listo para el siguiente paso!`);
                     });
                     availableSlotsEl.appendChild(slotEl);
                 });
@@ -269,6 +271,17 @@ document.addEventListener('DOMContentLoaded', () => {
       'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg',
     };
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
+  }
+
+  /**
+   * NUEVA FUNCIÓN AUXILIAR: Convierte una hora de "HH:mm" a "h:mm a.m./p.m."
+   */
+  function formatTime12h(time24h) {
+    const [hours, minutes] = time24h.split(':');
+    const h = parseInt(hours, 10);
+    const suffix = h >= 12 ? 'p.m.' : 'a.m.';
+    const hour12 = ((h + 11) % 12 + 1);
+    return `${hour12}:${minutes} ${suffix}`;
   }
 
   router();
