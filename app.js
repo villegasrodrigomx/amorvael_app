@@ -1,7 +1,3 @@
-//      'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
-//      'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
-//      'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
-//      'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg',
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
@@ -44,7 +40,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!allData) {
         allData = await fetchAppData();
       }
-
       const categories = [...new Set(allData.services.map(s => s.categoria))];
       
       categoryGrid.innerHTML = '';
@@ -52,10 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
       categories.forEach(categoryName => {
         const card = document.createElement('a');
         card.className = 'category-card';
-        // IMPORTANTE: Ahora usamos un event listener para manejar la navegación
         card.addEventListener('click', (e) => {
             e.preventDefault();
-            // Actualizamos la URL y llamamos al router para cambiar de vista
             history.pushState({}, '', `?category=${encodeURIComponent(categoryName)}`);
             router();
         });
@@ -76,14 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-async function renderServicesView(categoryName) {
+  async function renderServicesView(categoryName) {
     const view = renderView('template-services-view');
     if (!view) return;
 
-    // Ponemos el título de la categoría en la vista
     view.querySelector('.view-title').textContent = categoryName;
     
-    // Configuramos el botón de "Volver"
     view.querySelector('.back-link').addEventListener('click', (e) => {
         e.preventDefault();
         history.pushState({}, '', '/');
@@ -100,7 +91,6 @@ async function renderServicesView(categoryName) {
         allData = await fetchAppData();
       }
 
-      // Filtramos solo los servicios que pertenecen a esta categoría
       const servicesInCategory = allData.services.filter(s => s.categoria === categoryName);
       
       serviceList.innerHTML = '';
@@ -108,9 +98,11 @@ async function renderServicesView(categoryName) {
       servicesInCategory.forEach(service => {
         const serviceCard = document.createElement('a');
         serviceCard.className = 'service-card';
-        serviceCard.href = `?service=${service.id}`;
-        // Por ahora, el enlace no hará nada, lo implementaremos en el siguiente paso
-        serviceCard.addEventListener('click', (e) => e.preventDefault());
+        serviceCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            history.pushState({}, '', `?service=${service.id}`);
+            router();
+        });
 
         serviceCard.innerHTML = `
           <div class="service-card-info">
@@ -257,28 +249,28 @@ async function renderServicesView(categoryName) {
     renderCalendar();
   }
 
-  // El resto del código completo está abajo
-  async function fetchAppData() { 
-    const response = await fetch(`${API_ENDPOINT}?action=getAppData`); 
-    if (!response.ok) { 
-      throw new Error('No se pudo conectar con el servidor.'); 
-    } 
-    const data = await response.json(); 
-    if (data.status !== 'success') { 
+  async function fetchAppData() {
+    const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
+    if (!response.ok) {
+      throw new Error('No se pudo conectar con el servidor.');
+    }
+    const data = await response.json();
+    if (data.status !== 'success') {
       throw new Error(data.message);
-    } return data;
+    }
+    return data;
   }
   
-  function getCategoryImage(categoryName) { 
-    const images = { 
+  function getCategoryImage(categoryName) {
+    const images = {
       'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
       'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
       'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
       'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg',
-    }; 
+    };
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
   }
-  
+
   router();
   window.addEventListener('popstate', router);
 });
