@@ -1,0 +1,3 @@
+# netlify.toml - Configuración para Funciones
+[functions]
+  directory = "netlify/functions/"
