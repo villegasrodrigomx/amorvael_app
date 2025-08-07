@@ -101,10 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // **TU TAREA:** Reemplaza estas URLs con las de tus propias fotos.
   function getCategoryImage(categoryName) {
     const images = {
-      'Uñas': 'https://images.unsplash.com/photo-1604654894610-df6231364185?q=80&w=1974&auto=format&fit=crop',
-      'Pestañas': 'https://images.unsplash.com/photo-1599387737838-66a22e6b6e1a?q=80&w=1974&auto=format&fit=crop',
-      'Masajes': 'https://images.unsplash.com/photo-1544161515-4ab6ce6db874?q=80&w=2070&auto=format&fit=crop',
-      'Faciales': 'https://images.unsplash.com/photo-1598202392434-31131a7101c7?q=80&w=1974&auto=format&fit=crop',
+      'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
+      'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
+      'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
+      'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg',
     };
     // Devuelve la imagen de la categoría o una por defecto si no la encuentra
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
@@ -113,3 +113,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- INICIAR LA APP ---
   router();
 });
+
