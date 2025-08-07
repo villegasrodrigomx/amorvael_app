@@ -296,3 +296,9 @@
   background-color: #f8d7da;
   color: #721c24;
 }
+
+/* Arreglo para el color del texto en los inputs del formulario */
+.modal-content .form-group input {
+  color: #4A4A4A; /* Usa el color de texto principal de la app */
+  font-size: 1em;
+}
