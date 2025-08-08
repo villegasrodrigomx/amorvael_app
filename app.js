@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       });
       view.querySelector('#buy-package-btn').addEventListener('click', () => {
-        alert(`Funcionalidad de compra para "${pkg.nombre}" en construcción.`);
+        openPurchaseModal(pkg);
       });
     } catch (error) {
       view.innerHTML = `<p class="error-message">Error al cargar el paquete: ${error.message}</p>`;
@@ -324,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         confirmBtn.textContent = 'Procesando...';
         confirmBtn.disabled = true;
-        const bookingData = { serviceId, date: toISODateString(date), time: time24h, clientName, clientEmail, clientPhone };
+        const bookingData = { action: 'createBooking', serviceId, date: toISODateString(date), time: time24h, clientName, clientEmail, clientPhone };
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(bookingData) });
             const result = await response.json();
@@ -344,6 +344,50 @@ document.addEventListener('DOMContentLoaded', () => {
             modalMessage.textContent = error.message;
             modalMessage.className = 'error';
             confirmBtn.textContent = 'Confirmar Cita';
+            confirmBtn.disabled = false;
+        }
+        modalMessage.style.display = 'block';
+    };
+  }
+  
+  function openPurchaseModal(pkg) {
+    const modal = document.getElementById('booking-modal');
+    document.getElementById('modal-title').textContent = 'Confirmar Compra de Paquete';
+    document.querySelector('#booking-modal .booking-summary').innerHTML = `<p><strong>Paquete:</strong> <span id="modal-service-name">${pkg.nombre}</span></p><p><strong>Precio:</strong> <span id="modal-price">$${pkg.precio.toLocaleString('es-MX')} MXN</span></p>`;
+    document.querySelector('#booking-modal .booking-form').style.display = 'block';
+    const modalMessage = document.getElementById('modal-message');
+    modalMessage.style.display = 'none';
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar Compra';
+    modal.style.display = 'flex';
+    document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+    confirmBtn.onclick = async () => {
+        const clientName = document.getElementById('clientName').value;
+        const clientEmail = document.getElementById('clientEmail').value;
+        const clientPhone = document.getElementById('clientPhone').value;
+        if (!clientName || !clientEmail || !clientPhone) {
+            alert('Por favor, completa todos los campos.');
+            return;
+        }
+        confirmBtn.textContent = 'Procesando...';
+        confirmBtn.disabled = true;
+        const purchaseData = { action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone };
+        try {
+            const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(purchaseData) });
+            const result = await response.json();
+            if (result.status === 'success') {
+                document.getElementById('modal-title').textContent = '¡Compra Exitosa!';
+                modalMessage.textContent = result.message;
+                modalMessage.className = 'success';
+                document.querySelector('#booking-modal .booking-form').style.display = 'none';
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            modalMessage.textContent = error.message;
+            modalMessage.className = 'error';
+            confirmBtn.textContent = 'Confirmar Compra';
             confirmBtn.disabled = false;
         }
         modalMessage.style.display = 'block';
