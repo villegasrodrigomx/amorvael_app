@@ -214,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const slotsContainer = view.querySelector('.slots-container');
     const availableSlotsEl = view.querySelector('#availableSlots');
     let currentDate = new Date();
-    let hoyOficial = '';
 
     function renderCalendar() {
       const month = currentDate.getMonth();
@@ -228,12 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
         const dayCell = document.createElement('div');
         const dayDate = new Date(year, month, day);
-        const isoDate = toISODateString(dayDate);
         dayCell.className = 'calendar-day';
         dayCell.textContent = day;
-
-        // Deshabilitamos hoy y días pasados basándonos en la fecha oficial del servidor
-        if (hoyOficial && isoDate <= hoyOficial) {
+        if (dayDate < new Date().setHours(0,0,0,0)) {
             dayCell.classList.add('disabled');
         } else {
             dayCell.addEventListener('click', async () => {
@@ -245,63 +241,34 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarDaysEl.appendChild(dayCell);
       }
     }
-
     async function fetchAndDisplaySlots(serviceId, date) {
         slotsContainer.style.display = 'block';
         availableSlotsEl.innerHTML = '';
         availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-        const dateString = toISODateString(date);
+        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
         const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
         try {
             const response = await fetch(url);
             const data = await response.json();
             availableSlotsEl.innerHTML = '';
-            if (data.status === 'success') {
-                if (data.availableSlots.length > 0) {
-                    data.availableSlots.sort().forEach(slotTime24h => {
-                        const slotEl = document.createElement('div');
-                        slotEl.className = 'slot';
-                        slotEl.textContent = formatTime12h(slotTime24h);
-                        slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotTime24h));
-                        availableSlotsEl.appendChild(slotEl);
-                    });
-                } else {
-                    availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
-                }
+            if (data.status === 'success' && data.availableSlots.length > 0) {
+                data.availableSlots.sort().forEach(slotTime24h => {
+                    const slotEl = document.createElement('div');
+                    slotEl.className = 'slot';
+                    slotEl.textContent = formatTime12h(slotTime24h);
+                    slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotTime24h));
+                    availableSlotsEl.appendChild(slotEl);
+                });
             } else {
-                 throw new Error(data.message);
+                availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
             }
         } catch (error) {
             availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
         }
     }
-
-    // --- CORRECCIÓN CLAVE ---
-    // Función de arranque que primero obtiene la fecha de "hoy" y luego renderiza el calendario.
-    async function setupCalendar() {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const dateString = toISODateString(tomorrow);
-        const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            if (data.status === 'success') {
-                hoyOficial = data.hoy; // Establecemos la fecha oficial
-                renderCalendar(); // Y AHORA renderizamos el calendario
-            } else {
-                throw new Error(data.message);
-            }
-        } catch(error) {
-            console.error("Error al inicializar el calendario:", error);
-            calendarDaysEl.innerHTML = `<p class="error-message">No se pudo inicializar el calendario.</p>`;
-        }
-    }
-
     prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
     nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
-    
-    setupCalendar(); // Llamamos a la nueva función de arranque
+    renderCalendar();
   }
 
   // --- LÓGICA DEL MODAL DE RESERVA ---
@@ -324,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         confirmBtn.textContent = 'Procesando...';
         confirmBtn.disabled = true;
-        const bookingData = { serviceId, date: toISODateString(date), time: time24h, clientName, clientEmail, clientPhone };
+        const bookingData = { serviceId, date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`, time: time24h, clientName, clientEmail, clientPhone };
         const modalMessage = document.getElementById('modal-message');
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(bookingData) });
@@ -392,10 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p>`;
     }
     return card;
-  }
-  
-  function toISODateString(date) { 
-    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
   }
 
   // --- INICIAR LA APP ---
