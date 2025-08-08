@@ -142,6 +142,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const loadingEl = view.querySelector('.loading-spinner');
       if (loadingEl) loadingEl.remove();
 
+      const imageEl = view.querySelector('.service-main-image');
+      if (imageEl && service.imagenUrl) {
+        imageEl.src = service.imagenUrl;
+      }
+
       const titleEl = view.querySelector('.view-title');
       if (titleEl) titleEl.textContent = service.nombre;
 
