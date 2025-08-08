@@ -100,3 +100,63 @@ body {
 .package-services-included ul { list-style-type: none; padding: 0; margin: 0; }
 .package-services-included li { padding: 10px; border-bottom: 1px solid var(--border-color); }
 .package-services-included li:last-child { border-bottom: none; }
+
+/* ================================== */
+/* NUEVOS ESTILOS PARA EL ÁREA DE CLIENTES */
+/* ================================== */
+
+#client-area-entry {
+  background-color: var(--secondary-color);
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.client-area-link {
+  color: var(--white);
+  text-decoration: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.login-form {
+  background-color: var(--white);
+  padding: 30px;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.login-form p {
+  text-align: center;
+  margin-top: 0;
+  color: #666;
+}
+
+#login-message {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.client-package-card {
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+.client-package-card h4 {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: var(--secondary-color);
+}
+
+.client-package-card p {
+  margin: 5px 0;
+}
