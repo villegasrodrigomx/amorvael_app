@@ -2,7 +2,7 @@
   --primary-color: #E5A1AA;
   --secondary-color: #B4869F;
   --text-color: #4A4A4A;
-  --bg-color: #FFF8F7; /* Fondo rosado suave */
+  --bg-color: #FFF8F7;
   --white: #FFFFFF;
   --border-color: #EAEAEA;
 }
@@ -16,19 +16,9 @@ body {
   margin: 0;
 }
 
-.container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-}
-
-.main-header {
-  text-align: center;
-  padding: 20px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--white);
-}
-.main-header h1 { margin: 0; color: var(--primary-color); font-weight: 300; letter-spacing: 2px; }
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+.main-header { text-align: center; padding: 20px; border-bottom: 1px solid var(--border-color); background-color: var(--white); }
+.main-header h1 { margin: 0; color: var(--primary-color); font-weight: 300; letter-spacing: 2px; font-size: 1.5em; }
 .main-header a { text-decoration: none; }
 
 .view { animation: fadeIn 0.5s ease-in-out; }
@@ -37,19 +27,8 @@ body {
 .back-link { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--secondary-color); margin-bottom: 20px; font-weight: 500; }
 .back-link:hover { color: var(--primary-color); }
 
-/* --- CORRECCIÓN DE LA VISTA DE CATEGORÍAS --- */
-.category-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* Una columna en móviles */
-  gap: 20px;
-}
-@media (min-width: 600px) {
-  .category-grid {
-    grid-template-columns: 1fr 1fr; /* Dos columnas en pantallas más grandes */
-  }
-}
-/* --- FIN DE LA CORRECCIÓN --- */
-
+.category-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+@media (min-width: 600px) { .category-grid { grid-template-columns: 1fr 1fr; } }
 .category-card { display: block; background-color: var(--white); border-radius: 12px; overflow: hidden; text-decoration: none; color: var(--text-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .category-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
 .category-card-image { width: 100%; height: 180px; object-fit: cover; }
@@ -100,107 +79,24 @@ body {
 .booking-summary p { margin: 5px 0; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-.form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; } /* <-- CORRECCIÓN DE TEXTO ILEGIBLE */
+.form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; }
 #modal-message { margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center; font-weight: 500; }
 #modal-message.success { background-color: #d4edda; color: #155724; }
 #modal-message.error { background-color: #f8d7da; color: #721c24; }
 
-/* ================================== */
-/* NUEVOS ESTILOS PARA LA VISTA DE PAQUETES */
-/* ================================== */
+.package-list { display: flex; flex-direction: column; gap: 15px; }
+.package-card { display: block; background-color: var(--white); padding: 20px; border-radius: 12px; text-decoration: none; color: var(--text-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; border-left: 5px solid var(--secondary-color); }
+.package-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+.package-card h4 { margin: 0 0 10px 0; font-weight: 500; font-size: 1.2em; color: var(--secondary-color); }
+.package-card p { margin: 0; color: #888; }
+.package-card .package-price { font-weight: bold; color: var(--primary-color); margin-top: 10px; font-size: 1.1em; }
 
-.package-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-/* Usamos un estilo similar al de los servicios para consistencia */
-.package-card {
-  display: block;
-  background-color: var(--white);
-  padding: 20px;
-  border-radius: 12px;
-  text-decoration: none;
-  color: var(--text-color);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border-left: 5px solid var(--secondary-color);
-}
-
-.package-card:hover {
-  transform: translateY(-3px) scale(1.01);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-}
-
-.package-card h4 {
-  margin: 0 0 10px 0;
-  font-weight: 500;
-  font-size: 1.2em;
-  color: var(--secondary-color);
-}
-
-.package-card p {
-  margin: 0;
-  color: #888;
-}
-
-.package-card .package-price {
-    font-weight: bold;
-    color: var(--primary-color);
-    margin-top: 10px;
-    font-size: 1.1em;
-}
-
-/* ================================== */
-/* NUEVOS ESTILOS PARA EL DETALLE DEL PAQUETE */
-/* ================================== */
-
-.package-detail-card {
-  background-color: var(--white);
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-
-.package-info .view-title {
-  text-align: left;
-  margin-top: 0;
-}
-
-.package-info .package-price {
-  font-size: 1.2em;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin: -10px 0 20px 0;
-}
-
-.package-info .package-description {
-  line-height: 1.6;
-  color: #555;
-}
-
-.package-services-included {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-color);
-}
-
-.package-services-included h4 {
-  font-weight: 500;
-  margin-bottom: 15px;
-}
-
-.package-services-included ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-}
-
-.package-services-included li {
-  padding: 10px;
-  border-bottom: 1px solid var(--border-color);
-}
-.package-services-included li:last-child {
-  border-bottom: none;
-}
+.package-detail-card { background-color: var(--white); padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+.package-info .view-title { text-align: left; margin-top: 0; }
+.package-info .package-price { font-size: 1.2em; font-weight: bold; color: var(--primary-color); margin: -10px 0 20px 0; }
+.package-info .package-description { line-height: 1.6; color: #555; }
+.package-services-included { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+.package-services-included h4 { font-weight: 500; margin-bottom: 15px; }
+.package-services-included ul { list-style-type: none; padding: 0; margin: 0; }
+.package-services-included li { padding: 10px; border-bottom: 1px solid var(--border-color); }
+.package-services-included li:last-child { border-bottom: none; }
