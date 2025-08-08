@@ -12,10 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageId = params.get('package');
 
     if (packageId) {
-      // Futuro: renderPackageDetailView(packageId);
-      alert('Vista de detalle de paquete en construcción!');
-      history.pushState({}, '', '?view=packages');
-      router();
+      renderPackageDetailView(packageId);
     } else if (view === 'packages') {
       renderPackagesView();
     } else if (serviceId) {
@@ -138,25 +135,20 @@ document.addEventListener('DOMContentLoaded', () => {
   async function renderPackagesView() {
     const view = renderView('template-packages-view');
     if (!view) return;
-
     view.querySelector('.back-link').addEventListener('click', (e) => {
         e.preventDefault();
         history.pushState({}, '', '/');
         router();
     });
-
     const packageList = view.querySelector('.package-list');
     packageList.innerHTML = '';
     const loadingSpinner = document.getElementById('template-loading').content.cloneNode(true);
     packageList.appendChild(loadingSpinner);
-
     try {
       if (!allData) {
         allData = await fetchAppData();
       }
-      
       packageList.innerHTML = '';
-
       allData.packages.forEach(pkg => {
         const packageCard = document.createElement('a');
         packageCard.className = 'package-card';
@@ -165,10 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
             history.pushState({}, '', `?package=${pkg.id}`);
             router();
         });
-
         const serviceCount = pkg.servicios.length;
         const serviceText = serviceCount === 1 ? '1 servicio' : `${serviceCount} servicios`;
-
         packageCard.innerHTML = `
           <h4>${pkg.nombre}</h4>
           <p>Incluye ${serviceText}</p>
@@ -176,7 +166,6 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         packageList.appendChild(packageCard);
       });
-
     } catch (error) {
       packageList.innerHTML = `<p class="error-message">Error al cargar los paquetes: ${error.message}</p>`;
     }
@@ -226,6 +215,43 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     } catch (error) {
       view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
+    }
+  }
+
+  async function renderPackageDetailView(packageId) {
+    const view = renderView('template-package-detail-view');
+    if (!view) return;
+    view.querySelector('.back-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        history.pushState({}, '', '?view=packages');
+        router();
+    });
+    const loadingSpinner = document.getElementById('template-loading').content.cloneNode(true);
+    view.prepend(loadingSpinner);
+    try {
+      if (!allData) {
+        allData = await fetchAppData();
+      }
+      const pkg = allData.packages.find(p => p.id === packageId);
+      if (!pkg) throw new Error('Paquete no encontrado.');
+      view.querySelector('.loading-spinner').remove();
+      view.querySelector('.view-title').textContent = pkg.nombre;
+      view.querySelector('.package-price').textContent = `$${pkg.precio.toLocaleString('es-MX')} MXN`;
+      const servicesIncludedList = view.querySelector('.package-services-included ul');
+      servicesIncludedList.innerHTML = '';
+      pkg.servicios.forEach(serviceId => {
+        const service = allData.services.find(s => s.id === serviceId);
+        if (service) {
+          const listItem = document.createElement('li');
+          listItem.textContent = service.nombre;
+          servicesIncludedList.appendChild(listItem);
+        }
+      });
+      document.getElementById('buy-package-btn').addEventListener('click', () => {
+        alert(`Funcionalidad de compra para "${pkg.nombre}" en construcción. ¡El siguiente paso!`);
+      });
+    } catch (error) {
+      view.innerHTML = `<p class="error-message">Error al cargar el paquete: ${error.message}</p>`;
     }
   }
 
