@@ -104,3 +104,50 @@ body {
 #modal-message { margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center; font-weight: 500; }
 #modal-message.success { background-color: #d4edda; color: #155724; }
 #modal-message.error { background-color: #f8d7da; color: #721c24; }
+
+/* ================================== */
+/* NUEVOS ESTILOS PARA LA VISTA DE PAQUETES */
+/* ================================== */
+
+.package-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Usamos un estilo similar al de los servicios para consistencia */
+.package-card {
+  display: block;
+  background-color: var(--white);
+  padding: 20px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: var(--text-color);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: 5px solid var(--secondary-color);
+}
+
+.package-card:hover {
+  transform: translateY(-3px) scale(1.01);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.package-card h4 {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  font-size: 1.2em;
+  color: var(--secondary-color);
+}
+
+.package-card p {
+  margin: 0;
+  color: #888;
+}
+
+.package-card .package-price {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: 10px;
+    font-size: 1.1em;
+}
