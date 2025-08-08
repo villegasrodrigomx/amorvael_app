@@ -101,10 +101,6 @@ body {
 .package-services-included li { padding: 10px; border-bottom: 1px solid var(--border-color); }
 .package-services-included li:last-child { border-bottom: none; }
 
-/* ================================== */
-/* NUEVOS ESTILOS PARA EL ÁREA DE CLIENTES */
-/* ================================== */
-
 #client-area-entry {
   background-color: var(--secondary-color);
   padding: 15px;
