@@ -347,7 +347,8 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="Imagen de ${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="https://images.unsplash.com/photo-1558979158-65a1eaa08691?q=80&w=2070&auto=format&fit=crop" alt="Imagen de Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+      const packageImageUrl = 'URL_DE_TU_IMAGEN_DE_PAQUETES_AQUI'; // <-- RECUERDA CAMBIAR ESTO
+      card.innerHTML = `<img src="${packageImageUrl}" alt="Imagen de Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
       card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
