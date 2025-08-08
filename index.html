@@ -21,14 +21,120 @@
         <!-- Las vistas de la app se cargarán aquí -->
     </main>
 
-    <!-- ... (El resto del archivo no cambia) ... -->
-    <template id="template-loading"> <div class="loading-spinner"></div> </template>
-    <template id="template-categories-view"> <div class="view"> <h2>Nuestros Servicios</h2> <div class="category-grid"></div> </div> </template>
-    <template id="template-services-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a> <h2 class="view-title"></h2> <div class="service-list"></div> </div> </template>
-    <template id="template-packages-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a> <h2 class="view-title">Paquetes Especiales</h2> <div class="package-list"></div> </div> </template>
-    <template id="template-package-detail-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Paquetes</a> <div class="package-detail-card"> <div class="package-info"> <h2 class="view-title"></h2> <p class="package-price"></p> <p class="package-description"></p> <div class="package-services-included"> <h4>Servicios Incluidos:</h4> <ul></ul> </div> <button class="cta-button" id="buy-package-btn">Comprar Paquete</button> </div> </div> </div> </template>
-    <template id="template-service-detail-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Servicios</a> <div class="service-detail-card"> <div class="service-gallery"> <img class="service-main-image" src="https://placehold.co/800x600/E5A1AA/FFFFFF?text=Amor-Vael" alt="Imagen del servicio"> </div> <div class="service-info"> <h2 class="view-title"></h2> <p class="service-price"></p> <p class="service-duration"></p> <p class="service-description">Cargando descripción...</p> <button class="cta-button" id="show-calendar-btn">Agendar Cita</button> </div> </div> <div class="booking-section" style="display: none;"> <h3>Selecciona una Fecha</h3> <div class="calendar-container"> <div class="calendar-header"> <button id="prevMonth">&lt;</button> <h4 id="monthYear"></h4> <button id="nextMonth">&gt;</button> </div> <div class="calendar-grid weekdays"> <div class="weekday">Dom</div><div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div><div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div> </div> <div class="calendar-grid" id="calendarDays"></div> </div> <div class="slots-container" style="display: none;"> <h4>Horarios Disponibles</h4> <div id="availableSlots" class="slots-grid"></div> </div> </div> </div> </template>
-    <div id="booking-modal" class="modal-overlay" style="display: none;"> <div class="modal-content"> <button class="close-modal-btn" id="close-modal">&times;</button> <h3>Confirmar tu Cita</h3> <div class="booking-summary"> <p><strong>Servicio:</strong> <span id="modal-service-name"></span></p> <p><strong>Fecha:</strong> <span id="modal-date"></span></p> <p><strong>Hora:</strong> <span id="modal-time"></span></p> </div> <div class="booking-form"> <div class="form-group"> <label for="clientName">Nombre Completo:</label> <input type="text" id="clientName" required> </div> <div class="form-group"> <label for="clientEmail">Correo Electrónico:</label> <input type="email" id="clientEmail" required> </div> <div class="form-group"> <label for="clientPhone">Celular:</label> <input type="tel" id="clientPhone" required> </div> <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button> <div id="modal-message" style="display: none;"></div> </div> </div> </div>
+    <!-- ====================================================== -->
+    <!-- PLANTILLAS DE VISTAS (Templates)                       -->
+    <!-- ====================================================== -->
+    <template id="template-loading">
+        <div class="loading-spinner"></div>
+    </template>
+
+    <template id="template-categories-view">
+        <div class="view">
+            <h2>Nuestros Servicios</h2>
+            <div class="category-grid"></div>
+        </div>
+    </template>
+
+    <template id="template-services-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
+            <h2 class="view-title"></h2>
+            <div class="service-list"></div>
+        </div>
+    </template>
+    
+    <template id="template-packages-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a>
+            <h2 class="view-title">Paquetes Especiales</h2>
+            <div class="package-list"></div>
+        </div>
+    </template>
+
+    <template id="template-package-detail-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Paquetes</a>
+            <div class="package-detail-card">
+                <div class="package-info">
+                    <h2 class="view-title"></h2>
+                    <p class="package-price"></p>
+                    <p class="package-description"></p>
+                    <div class="package-services-included">
+                        <h4>Servicios Incluidos:</h4>
+                        <ul></ul>
+                    </div>
+                    <button class="cta-button" id="buy-package-btn">Comprar Paquete</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-service-detail-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Servicios</a>
+            <div class="service-detail-card">
+                <div class="service-gallery">
+                    <img class="service-main-image" src="https://placehold.co/800x600/E5A1AA/FFFFFF?text=Amor-Vael" alt="Imagen del servicio">
+                </div>
+                <div class="service-info">
+                    <h2 class="view-title"></h2>
+                    <p class="service-price"></p>
+                    <p class="service-duration"></p>
+                    <p class="service-description">Cargando descripción...</p>
+                    <button class="cta-button" id="show-calendar-btn">Agendar Cita</button>
+                </div>
+            </div>
+            <div class="booking-section" style="display: none;">
+                <h3>Selecciona una Fecha</h3>
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button id="prevMonth">&lt;</button>
+                        <h4 id="monthYear"></h4>
+                        <button id="nextMonth">&gt;</button>
+                    </div>
+                    <div class="calendar-grid weekdays">
+                        <div class="weekday">Dom</div><div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div><div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div>
+                    </div>
+                    <div class="calendar-grid" id="calendarDays"></div>
+                </div>
+                <div class="slots-container" style="display: none;">
+                    <h4>Horarios Disponibles</h4>
+                    <div id="availableSlots" class="slots-grid"></div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- MODAL DE RESERVA (oculto por defecto) -->
+    <div id="booking-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal-btn" id="close-modal">&times;</button>
+            <h3 id="modal-title">Revisa y Confirma tu Cita</h3> <!-- Título con ID -->
+            <div class="booking-summary">
+                <p><strong>Servicio:</strong> <span id="modal-service-name"></span></p>
+                <p><strong>Fecha:</strong> <span id="modal-date"></span></p>
+                <p><strong>Hora:</strong> <span id="modal-time"></span></p>
+                <p><strong>Precio:</strong> <span id="modal-price"></span></p> <!-- Nueva línea para el precio -->
+            </div>
+            <div class="booking-form">
+                <div class="form-group">
+                    <label for="clientName">Nombre Completo:</label>
+                    <input type="text" id="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientEmail">Correo Electrónico:</label>
+                    <input type="email" id="clientEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="clientPhone">Celular:</label>
+                    <input type="tel" id="clientPhone" required>
+                </div>
+                <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
+                <div id="modal-message" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
     <script>
         if ('serviceWorker' in navigator) {
