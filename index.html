@@ -42,6 +42,15 @@
             <div class="service-list"></div>
         </div>
     </template>
+    
+    <!-- ¡NUEVA PLANTILLA PARA LA LISTA DE PAQUETES! -->
+    <template id="template-packages-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a>
+            <h2 class="view-title">Paquetes Especiales</h2>
+            <div class="package-list"></div>
+        </div>
+    </template>
 
     <template id="template-service-detail-view">
         <div class="view">
@@ -54,7 +63,7 @@
                     <h2 class="view-title"></h2>
                     <p class="service-price"></p>
                     <p class="service-duration"></p>
-                    <p class="service-description">Aquí va una descripción detallada del servicio, explicando sus beneficios, el proceso y para quién es ideal.</p>
+                    <p class="service-description">Cargando descripción...</p>
                     <button class="cta-button" id="show-calendar-btn">Agendar Cita</button>
                 </div>
             </div>
@@ -75,9 +84,7 @@
 
                 <div class="slots-container" style="display: none;">
                     <h4>Horarios Disponibles</h4>
-                    <div id="availableSlots" class="slots-grid">
-                        <!-- Los horarios disponibles se cargarán aquí -->
-                    </div>
+                    <div id="availableSlots" class="slots-grid"></div>
                 </div>
             </div>
         </div>
