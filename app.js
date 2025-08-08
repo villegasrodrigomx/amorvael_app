@@ -214,6 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const slotsContainer = view.querySelector('.slots-container');
     const availableSlotsEl = view.querySelector('#availableSlots');
     let currentDate = new Date();
+    let hoyOficial = '';
 
     function renderCalendar() {
       const month = currentDate.getMonth();
@@ -227,9 +228,10 @@ document.addEventListener('DOMContentLoaded', () => {
       for (let day = 1; day <= lastDayOfMonth.getDate(); day++) {
         const dayCell = document.createElement('div');
         const dayDate = new Date(year, month, day);
+        const isoDate = toISODateString(dayDate);
         dayCell.className = 'calendar-day';
         dayCell.textContent = day;
-        if (dayDate < new Date().setHours(0,0,0,0)) {
+        if (hoyOficial && isoDate <= hoyOficial) {
             dayCell.classList.add('disabled');
         } else {
             dayCell.addEventListener('click', async () => {
@@ -241,46 +243,77 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarDaysEl.appendChild(dayCell);
       }
     }
+
     async function fetchAndDisplaySlots(serviceId, date) {
         slotsContainer.style.display = 'block';
         availableSlotsEl.innerHTML = '';
         availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-        const dateString = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const dateString = toISODateString(date);
         const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
         try {
             const response = await fetch(url);
             const data = await response.json();
             availableSlotsEl.innerHTML = '';
-            if (data.status === 'success' && data.availableSlots.length > 0) {
-                data.availableSlots.sort().forEach(slotTime24h => {
-                    const slotEl = document.createElement('div');
-                    slotEl.className = 'slot';
-                    slotEl.textContent = formatTime12h(slotTime24h);
-                    slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotTime24h));
-                    availableSlotsEl.appendChild(slotEl);
-                });
+            if (data.status === 'success') {
+                if (data.availableSlots.length > 0) {
+                    data.availableSlots.sort().forEach(slotTime24h => {
+                        const slotEl = document.createElement('div');
+                        slotEl.className = 'slot';
+                        slotEl.textContent = formatTime12h(slotTime24h);
+                        slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotTime24h));
+                        availableSlotsEl.appendChild(slotEl);
+                    });
+                } else {
+                    availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
+                }
             } else {
-                availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
+                 throw new Error(data.message);
             }
         } catch (error) {
             availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
         }
     }
+
+    async function setupCalendar() {
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const dateString = toISODateString(tomorrow);
+      const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
+      try {
+          const response = await fetch(url);
+          const data = await response.json();
+          if (data.status === 'success') {
+              hoyOficial = data.hoy;
+              renderCalendar();
+          } else {
+              throw new Error(data.message);
+          }
+      } catch(error) {
+          console.error("Error al inicializar el calendario:", error);
+          calendarDaysEl.innerHTML = `<p class="error-message">No se pudo inicializar el calendario.</p>`;
+      }
+    }
     prevMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); });
     nextMonthBtn.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); });
-    renderCalendar();
+    setupCalendar();
   }
 
-  // --- LÓGICA DEL MODAL DE RESERVA ---
   function openBookingModal(serviceId, date, time24h) {
     const service = allData.services.find(s => s.id === serviceId);
     const modal = document.getElementById('booking-modal');
+    document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
+    document.querySelector('#booking-modal .booking-form').style.display = 'block';
+    const modalMessage = document.getElementById('modal-message');
+    modalMessage.style.display = 'none';
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar Cita';
     document.getElementById('modal-service-name').textContent = service.nombre;
     document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     document.getElementById('modal-time').textContent = formatTime12h(time24h);
+    document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
     modal.style.display = 'flex';
     document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
-    const confirmBtn = document.getElementById('confirm-booking-btn');
     confirmBtn.onclick = async () => {
         const clientName = document.getElementById('clientName').value;
         const clientEmail = document.getElementById('clientEmail').value;
@@ -291,15 +324,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         confirmBtn.textContent = 'Procesando...';
         confirmBtn.disabled = true;
-        const bookingData = { serviceId, date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`, time: time24h, clientName, clientEmail, clientPhone };
-        const modalMessage = document.getElementById('modal-message');
+        const bookingData = { serviceId, date: toISODateString(date), time: time24h, clientName, clientEmail, clientPhone };
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(bookingData) });
             const result = await response.json();
             if (result.status === 'success') {
+                document.getElementById('modal-title').textContent = '¡Cita Confirmada!';
                 modalMessage.textContent = result.message;
                 modalMessage.className = 'success';
                 document.querySelector('#booking-modal .booking-form').style.display = 'none';
+                const calendarView = document.querySelector('#app-container .view');
+                if (calendarView) {
+                    initializeCalendar(serviceId, calendarView);
+                }
             } else {
                 throw new Error(result.message);
             }
@@ -313,7 +350,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // --- FUNCIONES AUXILIARES ---
   async function fetchAppData() {
     const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
     if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
@@ -361,7 +397,10 @@ document.addEventListener('DOMContentLoaded', () => {
     return card;
   }
 
-  // --- INICIAR LA APP ---
+  function toISODateString(date) { 
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
+  }
+
   router();
   window.addEventListener('popstate', router);
 });
