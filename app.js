@@ -208,17 +208,13 @@ document.addEventListener('DOMContentLoaded', () => {
         router();
       });
       
-      // --- CORRECCIÓN CLAVE ---
-      // Buscamos los elementos DENTRO de la vista que acabamos de crear.
       const showCalendarBtn = view.querySelector('#show-calendar-btn');
       const bookingSection = view.querySelector('.booking-section');
-      // --- FIN DE LA CORRECCIÓN ---
 
       if (showCalendarBtn && bookingSection) {
         showCalendarBtn.addEventListener('click', () => {
           bookingSection.style.display = 'block';
           showCalendarBtn.style.display = 'none';
-          // Pasamos la 'view' como argumento para que la función del calendario sepa dónde buscar sus elementos.
           initializeCalendar(serviceId, view);
         });
       }
@@ -265,15 +261,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function initializeCalendar(serviceId, view) {
-    // --- CORRECCIÓN CLAVE ---
-    // Buscamos los elementos del calendario DENTRO de la vista actual.
     const monthYearEl = view.querySelector('#monthYear');
     const calendarDaysEl = view.querySelector('#calendarDays');
     const prevMonthBtn = view.querySelector('#prevMonth');
     const nextMonthBtn = view.querySelector('#nextMonth');
     const slotsContainer = view.querySelector('.slots-container');
     const availableSlotsEl = view.querySelector('#availableSlots');
-    // --- FIN DE LA CORRECCIÓN ---
     
     let currentDate = new Date();
 
@@ -346,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openBookingModal(serviceId, date, time24h) {
     const service = allData.services.find(s => s.id === serviceId);
-    // Buscamos el modal en el documento principal, ya que es global.
     const modal = document.getElementById('booking-modal');
     document.getElementById('modal-service-name').textContent = service.nombre;
     document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
