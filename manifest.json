@@ -1,11 +1,11 @@
 {
-  "name": "Amor-Vael SPA - Citas",
-  "short_name": "Amor-Vael",
+  "name": "AMOR-VAEL Beauty Spa, Nails & Lashes",
+  "short_name": "AMOR-VAEL",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#FFF8F7",
   "theme_color": "#E5A1AA",
-  "description": "Agenda tu cita en Amor-Vael SPA.",
+  "description": "Agenda tu cita en AMOR-VAEL Beauty Spa, Nails & Lashes.",
   "icons": [
     {
       "src": "images/icon-192.png",
