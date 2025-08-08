@@ -1,304 +1,106 @@
-/* ================================== */
-/* NUEVOS ESTILOS PARA LA VISTA DE SERVICIOS */
-/* ================================== */
-
-.service-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
+:root {
+  --primary-color: #E5A1AA;
+  --secondary-color: #B4869F;
+  --text-color: #4A4A4A;
+  --bg-color: #FFF8F7; /* Fondo rosado suave */
+  --white: #FFFFFF;
+  --border-color: #EAEAEA;
 }
 
-.service-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: var(--white);
-  padding: 20px;
-  border-radius: 12px;
-  text-decoration: none;
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--bg-color);
   color: var(--text-color);
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.service-card:hover {
-  transform: translateY(-3px) scale(1.01);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
-}
-
-.service-card-info h4 {
-  margin: 0 0 5px 0;
-  font-weight: 500;
-  font-size: 1.1em;
-}
-
-.service-card-info p {
   margin: 0;
-  color: #888;
 }
 
-.service-card-arrow i {
-  font-size: 1.5em;
-  color: var(--primary-color);
-}
-
-/* Estilo para mensajes de error */
-.error-message {
-    color: #dc3545;
-    font-weight: bold;
-    text-align: center;
-    padding: 20px;
-    background-color: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 8px;
-}
-
-/* ================================== */
-/* NUEVOS ESTILOS PARA VISTA DE DETALLE Y CALENDARIO */
-/* ================================== */
-
-.service-detail-card {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 30px;
-  background-color: var(--white);
+.container {
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
 }
 
-@media (min-width: 768px) {
-  .service-detail-card {
-    grid-template-columns: 1fr 1fr;
-    padding: 30px;
+.main-header {
+  text-align: center;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--white);
+}
+.main-header h1 { margin: 0; color: var(--primary-color); font-weight: 300; letter-spacing: 2px; }
+.main-header a { text-decoration: none; }
+
+.view { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.view h2 { text-align: center; font-weight: 400; margin-bottom: 30px; }
+.back-link { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; color: var(--secondary-color); margin-bottom: 20px; font-weight: 500; }
+.back-link:hover { color: var(--primary-color); }
+
+/* --- CORRECCIÓN DE LA VISTA DE CATEGORÍAS --- */
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* Una columna en móviles */
+  gap: 20px;
+}
+@media (min-width: 600px) {
+  .category-grid {
+    grid-template-columns: 1fr 1fr; /* Dos columnas en pantallas más grandes */
   }
 }
+/* --- FIN DE LA CORRECCIÓN --- */
 
-.service-gallery .service-main-image {
-  width: 100%;
-  border-radius: 8px;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-}
+.category-card { display: block; background-color: var(--white); border-radius: 12px; overflow: hidden; text-decoration: none; color: var(--text-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.category-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+.category-card-image { width: 100%; height: 180px; object-fit: cover; }
+.category-card-title { padding: 20px; font-size: 1.2em; font-weight: 500; }
 
-.service-info .view-title {
-  text-align: left;
-  margin-top: 0;
-}
+.loading-spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto; }
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-.service-info .service-price, .service-info .service-duration {
-  font-size: 1.1em;
-  margin: 10px 0;
-  color: #555;
-}
+.service-list { display: flex; flex-direction: column; gap: 15px; }
+.service-card { display: flex; align-items: center; justify-content: space-between; background-color: var(--white); padding: 20px; border-radius: 12px; text-decoration: none; color: var(--text-color); box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.service-card:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+.service-card-info h4 { margin: 0 0 5px 0; font-weight: 500; font-size: 1.1em; }
+.service-card-info p { margin: 0; color: #888; }
+.service-card-arrow i { font-size: 1.5em; color: var(--primary-color); }
+.error-message { color: #dc3545; font-weight: bold; text-align: center; padding: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; }
 
-.cta-button {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border: none;
-  padding: 15px 25px;
-  border-radius: 8px;
-  font-size: 1.1em;
-  font-weight: 500;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 20px;
-  transition: background-color 0.3s ease;
-}
+.service-detail-card { display: grid; grid-template-columns: 1fr; gap: 30px; background-color: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+@media (min-width: 768px) { .service-detail-card { grid-template-columns: 1fr 1fr; padding: 30px; } }
+.service-gallery .service-main-image { width: 100%; border-radius: 8px; aspect-ratio: 4 / 3; object-fit: cover; }
+.service-info .view-title { text-align: left; margin-top: 0; }
+.service-info .service-price, .service-info .service-duration { font-size: 1.1em; margin: 10px 0; color: #555; }
+.cta-button { background-color: var(--primary-color); color: var(--white); border: none; padding: 15px 25px; border-radius: 8px; font-size: 1.1em; font-weight: 500; cursor: pointer; width: 100%; margin-top: 20px; transition: background-color 0.3s ease; }
+.cta-button:hover { background-color: var(--secondary-color); }
 
-.cta-button:hover {
-  background-color: var(--secondary-color);
-}
+.booking-section { margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border-color); }
+.calendar-container { max-width: 400px; margin: 0 auto; }
+.calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.calendar-header h4 { margin: 0; font-weight: 500; font-size: 1.2em; }
+.calendar-header button { background: none; border: 1px solid var(--border-color); border-radius: 50%; width: 36px; height: 36px; cursor: pointer; font-size: 1.2em; color: var(--secondary-color); transition: background-color 0.3s ease; }
+.calendar-header button:hover { background-color: #f0f0f0; }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.weekday { text-align: center; font-weight: 500; color: #aaa; font-size: 0.9em; }
+.calendar-day { text-align: center; padding: 10px 5px; border-radius: 50%; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+.calendar-day.disabled { color: #ccc; cursor: not-allowed; }
+.calendar-day:not(.disabled):not(.selected):hover { background-color: #f0f0f0; }
+.calendar-day.selected { background-color: var(--primary-color); color: var(--white); font-weight: 500; }
 
-.booking-section {
-  margin-top: 40px;
-  padding-top: 30px;
-  border-top: 1px solid var(--border-color);
-}
+.slots-container { margin-top: 30px; }
+.slots-container h4 { text-align: center; font-weight: 400; margin-bottom: 20px; }
+.slots-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; }
+.slot { background-color: var(--white); border: 1px solid var(--border-color); padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease; }
+.slot:hover { background-color: var(--primary-color); color: var(--white); border-color: var(--primary-color); }
 
-.calendar-container {
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.calendar-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.calendar-header h4 {
-  margin: 0;
-  font-weight: 500;
-  font-size: 1.2em;
-}
-
-.calendar-header button {
-  background: none;
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  width: 36px;
-  height: 36px;
-  cursor: pointer;
-  font-size: 1.2em;
-  color: var(--secondary-color);
-  transition: background-color 0.3s ease;
-}
-.calendar-header button:hover {
-  background-color: #f0f0f0;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-}
-
-.weekday {
-  text-align: center;
-  font-weight: 500;
-  color: #aaa;
-  font-size: 0.9em;
-}
-
-.calendar-day {
-  text-align: center;
-  padding: 10px 5px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.calendar-day.disabled {
-  color: #ccc;
-  cursor: not-allowed;
-}
-
-.calendar-day:not(.disabled):not(.selected):hover {
-  background-color: #f0f0f0;
-}
-
-.calendar-day.selected {
-  background-color: var(--primary-color);
-  color: var(--white);
-  font-weight: 500;
-}
-
-.slots-container {
-  margin-top: 30px;
-}
-.slots-container h4 {
-  text-align: center;
-  font-weight: 400;
-  margin-bottom: 20px;
-}
-
-.slots-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  gap: 10px;
-}
-
-.slot {
-  background-color: var(--white);
-  border: 1px solid var(--border-color);
-  padding: 12px;
-  text-align: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-.slot:hover {
-  background-color: var(--primary-color);
-  color: var(--white);
-  border-color: var(--primary-color);
-}
-
-/* ================================== */
-/* ESTILOS PARA EL MODAL DE RESERVA */
-/* ================================== */
-
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease;
-}
-
-.modal-content {
-  background-color: var(--white);
-  padding: 30px;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-}
-
-.close-modal-btn {
-  position: absolute;
-  top: 10px;
-  right: 15px;
-  background: none;
-  border: none;
-  font-size: 2em;
-  color: #aaa;
-  cursor: pointer;
-}
-
-.booking-summary {
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--border-color);
-}
-.booking-summary p {
-  margin: 5px 0;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: 500;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-}
-
-#modal-message {
-  margin-top: 15px;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-  font-weight: 500;
-}
-#modal-message.success {
-  background-color: #d4edda;
-  color: #155724;
-}
-#modal-message.error {
-  background-color: #f8d7da;
-  color: #721c24;
-}
-
-/* Arreglo para el color del texto en los inputs del formulario */
-.modal-content .form-group input {
-  color: #4A4A4A; /* Usa el color de texto principal de la app */
-  font-size: 1em;
-}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s ease; }
+.modal-content { background-color: var(--white); padding: 30px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+.close-modal-btn { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2em; color: #aaa; cursor: pointer; }
+.booking-summary { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+.booking-summary p { margin: 5px 0; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+.form-group input { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-color); font-size: 1em; } /* <-- CORRECCIÓN DE TEXTO ILEGIBLE */
+#modal-message { margin-top: 15px; padding: 15px; border-radius: 8px; text-align: center; font-weight: 500; }
+#modal-message.success { background-color: #d4edda; color: #155724; }
+#modal-message.error { background-color: #f8d7da; color: #721c24; }
