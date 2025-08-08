@@ -347,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="Imagen de ${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      const packageImageUrl = 'URL_DE_TU_IMAGEN_DE_PAQUETES_AQUI'; // <-- RECUERDA CAMBIAR ESTO
+      const packageImageUrl = 'http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg'; // <-- RECUERDA CAMBIAR ESTO
       card.innerHTML = `<img src="${packageImageUrl}" alt="Imagen de Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
@@ -365,3 +365,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
