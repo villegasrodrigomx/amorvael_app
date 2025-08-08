@@ -182,35 +182,44 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       const service = allData.services.find(s => s.id === serviceId);
       if (!service) throw new Error('Servicio no encontrado.');
+      
       const loadingEl = view.querySelector('.loading-spinner');
       if (loadingEl) loadingEl.remove();
+      
       const imageEl = view.querySelector('.service-main-image');
-      if (imageEl && service.imagenUrl) {
-        imageEl.src = service.imagenUrl;
-      }
+      if (imageEl && service.imagenUrl) imageEl.src = service.imagenUrl;
+      
       const titleEl = view.querySelector('.view-title');
       if (titleEl) titleEl.textContent = service.nombre;
+      
       const priceEl = view.querySelector('.service-price');
       if (priceEl) priceEl.textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+      
       const durationEl = view.querySelector('.service-duration');
       if (durationEl) durationEl.textContent = `Duración: ${service.duracion} minutos`;
+      
       const descriptionEl = view.querySelector('.service-description');
-      if (descriptionEl && service.descripcion) {
-        descriptionEl.textContent = service.descripcion;
-      }
+      if (descriptionEl && service.descripcion) descriptionEl.textContent = service.descripcion;
+      
       const category = allData.services.find(s => s.id === serviceId)?.categoria || '';
       view.querySelector('.back-link').addEventListener('click', (e) => {
         e.preventDefault();
         history.pushState({}, '', `?category=${encodeURIComponent(category)}`);
         router();
       });
-      const showCalendarBtn = document.getElementById('show-calendar-btn');
+      
+      // --- CORRECCIÓN CLAVE ---
+      // Buscamos los elementos DENTRO de la vista que acabamos de crear.
+      const showCalendarBtn = view.querySelector('#show-calendar-btn');
       const bookingSection = view.querySelector('.booking-section');
+      // --- FIN DE LA CORRECCIÓN ---
+
       if (showCalendarBtn && bookingSection) {
         showCalendarBtn.addEventListener('click', () => {
           bookingSection.style.display = 'block';
           showCalendarBtn.style.display = 'none';
-          initializeCalendar(serviceId);
+          // Pasamos la 'view' como argumento para que la función del calendario sepa dónde buscar sus elementos.
+          initializeCalendar(serviceId, view);
         });
       }
     } catch (error) {
@@ -247,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
           servicesIncludedList.appendChild(listItem);
         }
       });
-      document.getElementById('buy-package-btn').addEventListener('click', () => {
+      view.querySelector('#buy-package-btn').addEventListener('click', () => {
         alert(`Funcionalidad de compra para "${pkg.nombre}" en construcción. ¡El siguiente paso!`);
       });
     } catch (error) {
@@ -255,14 +264,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function initializeCalendar(serviceId) {
-    const monthYearEl = document.getElementById('monthYear');
-    const calendarDaysEl = document.getElementById('calendarDays');
-    const prevMonthBtn = document.getElementById('prevMonth');
-    const nextMonthBtn = document.getElementById('nextMonth');
-    const slotsContainer = document.querySelector('.slots-container');
-    const availableSlotsEl = document.getElementById('availableSlots');
+  function initializeCalendar(serviceId, view) {
+    // --- CORRECCIÓN CLAVE ---
+    // Buscamos los elementos del calendario DENTRO de la vista actual.
+    const monthYearEl = view.querySelector('#monthYear');
+    const calendarDaysEl = view.querySelector('#calendarDays');
+    const prevMonthBtn = view.querySelector('#prevMonth');
+    const nextMonthBtn = view.querySelector('#nextMonth');
+    const slotsContainer = view.querySelector('.slots-container');
+    const availableSlotsEl = view.querySelector('#availableSlots');
+    // --- FIN DE LA CORRECCIÓN ---
+    
     let currentDate = new Date();
+
     function renderCalendar() {
       const month = currentDate.getMonth();
       const year = currentDate.getFullYear();
@@ -332,6 +346,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function openBookingModal(serviceId, date, time24h) {
     const service = allData.services.find(s => s.id === serviceId);
+    // Buscamos el modal en el documento principal, ya que es global.
     const modal = document.getElementById('booking-modal');
     document.getElementById('modal-service-name').textContent = service.nombre;
     document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
