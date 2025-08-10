@@ -5,7 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const API_ENDPOINT = '/.netlify/functions/engine';
 
-  // --- ROUTER PRINCIPAL ---
   function router() {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
@@ -33,7 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- FUNCIÓN PARA RENDERIZAR VISTAS ---
   function renderView(templateId) {
     const template = document.getElementById(templateId);
     if (!template) {
@@ -46,8 +44,6 @@ document.addEventListener('DOMContentLoaded', () => {
     appContainer.appendChild(viewContent);
     return appContainer.querySelector('.view');
   }
-
-  // --- VISTAS DE LA APLICACIÓN ---
 
   async function renderCategoriesView() {
     const view = renderView('template-categories-view');
