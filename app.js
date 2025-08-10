@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const API_ENDPOINT = '/.netlify/functions/engine';
 
-  // --- ROUTER PRINCIPAL (CORREGIDO) ---
+  // --- ROUTER PRINCIPAL ---
   function router() {
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderServiceDetailView(serviceId, purchaseId);
     } else if (category) {
       renderServicesView(category);
-    } else if (view === 'packages') { // <-- ESTA ES LA LÍNEA QUE FALTABA
+    } else if (view === 'packages') {
       renderPackagesView();
     } else {
       renderCategoriesView();
