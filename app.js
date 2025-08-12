@@ -456,11 +456,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalMessage.textContent = result.message;
                 modalMessage.className = 'success';
                 document.querySelector('#booking-modal .booking-form').style.display = 'none';
-                if(purchaseId) {
-                  sessionStorage.removeItem('amorVaelClientData');
-                  clientData = null;
-                }
-            } else {
+                if (purchaseId) {
+                  // Actualiza los datos del cliente con la respuesta del servidor
+                  clientData.packages = result.updatedPackages;
+                  sessionStorage.setItem('amorVaelClientData', JSON.stringify(clientData));
+
+                  // Opcional pero recomendado: redirige a la lista de paquetes para que vea el cambio
+                  document.getElementById('close-modal').onclick = () => {
+                      document.getElementById('booking-modal').style.display = 'none';
+                      navigateTo('?view=my-packages');
+                  };
+             }     
+         } else {
                 throw new Error(result.message);
             }
         } catch (error) {
@@ -578,3 +585,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
