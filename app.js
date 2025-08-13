@@ -135,7 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function renderServiceDetailView(serviceId, purchaseId = null) {
+// Busca esta función en tu archivo app.js
+async function renderServiceDetailView(serviceId, purchaseId = null) {
     const view = renderView('template-service-detail-view');
     if (!view) return;
     view.prepend(document.getElementById('template-loading').content.cloneNode(true));
@@ -160,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
       view.querySelector('.view-title').textContent = service.nombre;
       view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
       view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
+      
+      // -- ESTA ES LA LÍNEA QUE AÑADIMOS --
       view.querySelector('.service-description').textContent = service.descripcion || 'Descripción no disponible.';
       
       const showCalendarBtn = view.querySelector('#show-calendar-btn');
@@ -172,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
     }
-  }
-
+  }  
+  
   async function renderPackageDetailView(packageId) {
     const view = renderView('template-package-detail-view');
     if (!view) return;
@@ -585,4 +588,5 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
 
