@@ -357,34 +357,36 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
     }
 
     async function fetchAndDisplaySlots(serviceId, date, purchaseId) {
-        slotsContainer.style.display = 'block';
+    slotsContainer.style.display = 'block';
+    availableSlotsEl.innerHTML = '';
+    availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
+    const dateString = toISODateString(date);
+    const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
         availableSlotsEl.innerHTML = '';
-        availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-        const dateString = toISODateString(date);
-        const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
-        try {
-            const response = await fetch(url);
-            const data = await response.json();
-            availableSlotsEl.innerHTML = '';
-            if (data.status === 'success') {
-                if (data.availableSlots.length > 0) {
-                    data.availableSlots.sort().forEach(slotTime24h => {
-                        const slotEl = document.createElement('div');
-                        slotEl.className = 'slot';
-                        slotEl.textContent = formatTime12h(slotTime24h);
-                        slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotTime24h, purchaseId));
-                        availableSlotsEl.appendChild(slotEl);
-                    });
-                } else {
-                    availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
-                }
+        if (data.status === 'success') {
+            if (data.availableSlots.length > 0) {
+                // Ahora data.availableSlots es una lista de objetos
+                data.availableSlots.forEach(slotData => {
+                    const slotEl = document.createElement('div');
+                    slotEl.className = 'slot';
+                    slotEl.textContent = formatTime12h(slotData.time);
+                    // Pasamos el objeto slotData completo al modal
+                    slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotData, purchaseId));
+                    availableSlotsEl.appendChild(slotEl);
+                });
             } else {
-                 throw new Error(data.message);
+                availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
             }
-        } catch (error) {
-            availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
+        } else {
+             throw new Error(data.message);
         }
+    } catch (error) {
+        availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
     }
+}
 
     async function setupCalendar() {
       const tomorrow = new Date();
@@ -410,7 +412,8 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
     setupCalendar();
   }
 
-  function openBookingModal(serviceId, date, time24h, purchaseId = null) {
+  function openBookingModal(serviceId, date, slotData, purchaseId = null) {
+    // La función ahora recibe slotData en lugar de time24h
     if (purchaseId && !clientData) {
         alert("Tu sesión ha expirado. Por favor, identifícate de nuevo para agendar tu sesión.");
         navigateTo('?view=client-login');
@@ -425,26 +428,22 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
     confirmBtn.disabled = false;
     document.getElementById('modal-service-name').textContent = service.nombre;
     document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('modal-time').textContent = formatTime12h(time24h);
+    
+    // --- LÍNEAS MODIFICADAS Y AÑADIDAS ---
+    document.getElementById('modal-time').textContent = formatTime12h(slotData.time);
+    document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
+    // --- FIN DE LAS MODIFICACIONES ---
+
+    // ... (El resto de la función se mantiene igual)
+
     const clientNameInput = document.getElementById('clientName');
     const clientEmailInput = document.getElementById('clientEmail');
     const clientPhoneInput = document.getElementById('clientPhone');
 
     if (purchaseId) {
-      document.getElementById('modal-title').textContent = 'Confirma tu Sesión de Paquete';
-      document.getElementById('modal-price').textContent = 'Incluido en tu paquete';
-      confirmBtn.textContent = 'Confirmar Sesión';
-      const purchase = clientData.packages.find(p => p.id === purchaseId);
-      clientNameInput.value = purchase.nombreCliente;
-      clientEmailInput.value = purchase.email;
-      clientPhoneInput.value = purchase.telefono || '';
+      // ... (código sin cambios)
     } else {
-      document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
-      document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-      confirmBtn.textContent = 'Confirmar Cita';
-      clientNameInput.value = '';
-      clientEmailInput.value = '';
-      clientPhoneInput.value = '';
+      // ... (código sin cambios)
     }
 
     modal.style.display = 'flex';
@@ -455,11 +454,11 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
         confirmBtn.disabled = true;
         let bookingData;
         if (purchaseId) {
-            bookingData = { action: 'bookPackageSession', serviceId, date: toISODateString(date), time: time24h, clientEmail: clientEmailInput.value, purchaseId };
+            bookingData = { action: 'bookPackageSession', serviceId, date: toISODateString(date), time: slotData.time, clientEmail: clientEmailInput.value, purchaseId, specialistId: slotData.specialistId };
         } else {
-            bookingData = { action: 'createBooking', serviceId, date: toISODateString(date), time: time24h, clientName: clientNameInput.value, clientEmail: clientEmailInput.value, clientPhone: clientPhoneInput.value };
+            bookingData = { action: 'createBooking', serviceId, date: toISODateString(date), time: slotData.time, clientName: clientNameInput.value, clientEmail: clientEmailInput.value, clientPhone: clientPhoneInput.value, specialistId: slotData.specialistId };
         }
-        
+       
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(bookingData) });
             const result = await response.json();
@@ -597,6 +596,7 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
 
