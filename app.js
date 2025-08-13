@@ -1,12 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
+  // CORRECCIÓN: Nos aseguramos de que clientData siempre se cargue desde sessionStorage al inicio
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
 
   const API_ENDPOINT = '/.netlify/functions/engine';
 
   // --- ROUTER PRINCIPAL ---
   function router() {
+    // Recargamos clientData en cada navegación para asegurar que esté actualizado
+    clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+    
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const category = params.get('category');
@@ -465,6 +469,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalMessage.className = 'success';
                 document.querySelector('#booking-modal .booking-form').style.display = 'none';
                 if(purchaseId) {
+                  // Opcional: podrías recargar los datos del paquete aquí para mostrar sesiones restantes actualizadas
+                  // Por ahora, simplemente limpiamos para forzar un nuevo login y ver los datos frescos.
                   sessionStorage.removeItem('amorVaelClientData');
                   clientData = null;
                 }
