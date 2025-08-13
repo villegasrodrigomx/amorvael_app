@@ -137,45 +137,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Busca esta función en tu archivo app.js
 async function renderServiceDetailView(serviceId, purchaseId = null) {
-    const view = renderView('template-service-detail-view');
-    if (!view) return;
-    view.prepend(document.getElementById('template-loading').content.cloneNode(true));
-    try {
-      if (!allData) allData = await fetchAppData();
-      const service = allData.services.find(s => s.id === serviceId);
-      if (!service) throw new Error('Servicio no encontrado.');
-      
-      view.querySelector('.loading-spinner')?.remove();
-      
-      const category = service.categoria || '';
-      view.querySelector('.back-link').addEventListener('click', (e) => {
-        e.preventDefault();
-        if (purchaseId) {
-          navigateTo(`?view=book-package-session&purchaseId=${purchaseId}`);
-        } else {
-          navigateTo(`?category=${encodeURIComponent(category)}`);
-        }
-      });
-      
-      view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(category);
-      view.querySelector('.view-title').textContent = service.nombre;
-      view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-      view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
-      
-      // -- ESTA ES LA LÍNEA QUE AÑADIMOS --
-      view.querySelector('.service-description').textContent = service.descripcion || 'Descripción no disponible.';
-      
-      const showCalendarBtn = view.querySelector('#show-calendar-btn');
-      const bookingSection = view.querySelector('.booking-section');
-      showCalendarBtn.addEventListener('click', () => {
-        bookingSection.style.display = 'block';
-        showCalendarBtn.style.display = 'none';
-        initializeCalendar(serviceId, view, purchaseId);
-      });
-    } catch (error) {
-      view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
+  const view = renderView('template-service-detail-view');
+  if (!view) return;
+  view.prepend(document.getElementById('template-loading').content.cloneNode(true));
+  try {
+    if (!allData) allData = await fetchAppData();
+    const service = allData.services.find(s => s.id === serviceId);
+    if (!service) throw new Error('Servicio no encontrado.');
+    
+    view.querySelector('.loading-spinner')?.remove();
+    
+    const category = service.categoria || '';
+    view.querySelector('.back-link').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (purchaseId) {
+        navigateTo(`?view=book-package-session&purchaseId=${purchaseId}`);
+      } else {
+        navigateTo(`?category=${encodeURIComponent(category)}`);
+      }
+    });
+
+    view.querySelector('.view-title').textContent = service.nombre;
+    
+    // --- LÓGICA PARA MOSTRAR NOMBRES DE ESPECIALISTAS ---
+    if (service.especialistas && allData.specialists) {
+      const specialistNames = service.especialistas.map(specId => {
+        const spec = allData.specialists.find(s => s.id.toUpperCase() === specId.toUpperCase());
+        return spec ? spec.nombre : null;
+      }).filter(Boolean).join(' • ');
+      view.querySelector('#service-specialists-list').textContent = `Con: ${specialistNames}`;
     }
-  }  
+    // --- FIN DE LA LÓGICA ---
+    
+    view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(category);
+    view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+    view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
+    view.querySelector('.service-description').textContent = service.descripcion || 'Descripción no disponible.';
+    
+    const showCalendarBtn = view.querySelector('#show-calendar-btn');
+    const bookingSection = view.querySelector('.booking-section');
+    showCalendarBtn.addEventListener('click', () => {
+      bookingSection.style.display = 'block';
+      showCalendarBtn.style.display = 'none';
+      initializeCalendar(serviceId, view, purchaseId);
+    });
+  } catch (error) {
+    view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
+  }
+}
   
   async function renderPackageDetailView(packageId) {
     const view = renderView('template-package-detail-view');
@@ -588,5 +597,6 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
