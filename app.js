@@ -135,57 +135,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-// Busca esta función en tu archivo app.js
-async function renderServiceDetailView(serviceId, purchaseId = null) {
-  const view = renderView('template-service-detail-view');
-  if (!view) return;
-  view.prepend(document.getElementById('template-loading').content.cloneNode(true));
-  try {
-    if (!allData) allData = await fetchAppData();
-    const service = allData.services.find(s => s.id === serviceId);
-    if (!service) throw new Error('Servicio no encontrado.');
-    
-    view.querySelector('.loading-spinner')?.remove();
-    
-    const category = service.categoria || '';
-    view.querySelector('.back-link').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (purchaseId) {
-        navigateTo(`?view=book-package-session&purchaseId=${purchaseId}`);
-      } else {
-        navigateTo(`?category=${encodeURIComponent(category)}`);
-      }
-    });
+  async function renderServiceDetailView(serviceId, purchaseId = null) {
+    const view = renderView('template-service-detail-view');
+    if (!view) return;
+    view.prepend(document.getElementById('template-loading').content.cloneNode(true));
+    try {
+      if (!allData) allData = await fetchAppData();
+      const service = allData.services.find(s => s.id === serviceId);
+      if (!service) throw new Error('Servicio no encontrado.');
+      
+      view.querySelector('.loading-spinner')?.remove();
+      
+      view.querySelector('.view-title').textContent = service.nombre;
 
-    view.querySelector('.view-title').textContent = service.nombre;
-    
-    // --- LÓGICA PARA MOSTRAR NOMBRES DE ESPECIALISTAS ---
-    if (service.especialistas && allData.specialists) {
-      const specialistNames = service.especialistas.map(specId => {
-        const spec = allData.specialists.find(s => s.id.toUpperCase() === specId.toUpperCase());
-        return spec ? spec.nombre : null;
-      }).filter(Boolean).join(' • ');
-      view.querySelector('#service-specialists-list').textContent = `Con: ${specialistNames}`;
+      if (service.especialistas && allData.specialists) {
+        const specialistNames = service.especialistas.map(specId => {
+          const spec = allData.specialists.find(s => s.id.toUpperCase() === specId.toUpperCase());
+          return spec ? spec.nombre : null;
+        }).filter(Boolean).join(' • ');
+        view.querySelector('#service-specialists-list').textContent = `Con: ${specialistNames}`;
+      }
+
+      const category = service.categoria || '';
+      view.querySelector('.back-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (purchaseId) {
+          navigateTo(`?view=book-package-session&purchaseId=${purchaseId}`);
+        } else {
+          navigateTo(`?category=${encodeURIComponent(category)}`);
+        }
+      });
+      
+      view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(category);
+      view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+      view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
+      view.querySelector('.service-description').textContent = service.descripcion || 'Descripción no disponible.';
+      
+      const showCalendarBtn = view.querySelector('#show-calendar-btn');
+      const bookingSection = view.querySelector('.booking-section');
+      showCalendarBtn.addEventListener('click', () => {
+        bookingSection.style.display = 'block';
+        showCalendarBtn.style.display = 'none';
+        initializeCalendar(serviceId, view, purchaseId);
+      });
+    } catch (error) {
+      view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
     }
-    // --- FIN DE LA LÓGICA ---
-    
-    view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(category);
-    view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-    view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
-    view.querySelector('.service-description').textContent = service.descripcion || 'Descripción no disponible.';
-    
-    const showCalendarBtn = view.querySelector('#show-calendar-btn');
-    const bookingSection = view.querySelector('.booking-section');
-    showCalendarBtn.addEventListener('click', () => {
-      bookingSection.style.display = 'block';
-      showCalendarBtn.style.display = 'none';
-      initializeCalendar(serviceId, view, purchaseId);
-    });
-  } catch (error) {
-    view.innerHTML = `<p class="error-message">Error al cargar el servicio: ${error.message}</p>`;
   }
-}
-  
+
   async function renderPackageDetailView(packageId) {
     const view = renderView('template-package-detail-view');
     if (!view) return;
@@ -357,50 +354,45 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
     }
 
     async function fetchAndDisplaySlots(serviceId, date, purchaseId) {
-    slotsContainer.style.display = 'block';
-    availableSlotsEl.innerHTML = '';
-    availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-    const dateString = toISODateString(date);
-    const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
+        slotsContainer.style.display = 'block';
         availableSlotsEl.innerHTML = '';
-        if (data.status === 'success') {
-            if (data.availableSlots.length > 0) {
-                // Ahora data.availableSlots es una lista de objetos
-                data.availableSlots.forEach(slotData => {
-                    const slotEl = document.createElement('div');
-                    slotEl.className = 'slot';
-                    slotEl.textContent = formatTime12h(slotData.time);
-                    // Pasamos el objeto slotData completo al modal
-                    slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotData, purchaseId));
-                    availableSlotsEl.appendChild(slotEl);
-                });
+        availableSlotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
+        const dateString = toISODateString(date);
+        const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            availableSlotsEl.innerHTML = '';
+            if (data.status === 'success') {
+                if (data.availableSlots.length > 0) {
+                    data.availableSlots.forEach(slotData => {
+                        const slotEl = document.createElement('div');
+                        slotEl.className = 'slot';
+                        slotEl.textContent = formatTime12h(slotData.time);
+                        slotEl.addEventListener('click', () => openBookingModal(serviceId, date, slotData, purchaseId));
+                        availableSlotsEl.appendChild(slotEl);
+                    });
+                } else {
+                    availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
+                }
             } else {
-                availableSlotsEl.innerHTML = '<p>No hay horarios disponibles para este día.</p>';
+                 throw new Error(data.message);
             }
-        } else {
-             throw new Error(data.message);
+        } catch (error) {
+            availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
         }
-    } catch (error) {
-        availableSlotsEl.innerHTML = `<p class="error-message">No se pudo cargar la disponibilidad.</p>`;
     }
-}
 
     async function setupCalendar() {
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const dateString = toISODateString(tomorrow);
-      const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${dateString}`;
+      const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=check`;
       try {
           const response = await fetch(url);
           const data = await response.json();
-          if (data.status === 'success') {
+          if (data.hoy) {
               hoyOficial = data.hoy;
               renderCalendar();
           } else {
-              throw new Error(data.message);
+              throw new Error(data.message || "Formato de respuesta inválido.");
           }
       } catch(error) {
           console.error("Error al inicializar el calendario:", error);
@@ -413,7 +405,6 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
   }
 
   function openBookingModal(serviceId, date, slotData, purchaseId = null) {
-    // La función ahora recibe slotData en lugar de time24h
     if (purchaseId && !clientData) {
         alert("Tu sesión ha expirado. Por favor, identifícate de nuevo para agendar tu sesión.");
         navigateTo('?view=client-login');
@@ -428,22 +419,28 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
     confirmBtn.disabled = false;
     document.getElementById('modal-service-name').textContent = service.nombre;
     document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    
-    // --- LÍNEAS MODIFICADAS Y AÑADIDAS ---
     document.getElementById('modal-time').textContent = formatTime12h(slotData.time);
     document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
-    // --- FIN DE LAS MODIFICACIONES ---
-
-    // ... (El resto de la función se mantiene igual)
 
     const clientNameInput = document.getElementById('clientName');
     const clientEmailInput = document.getElementById('clientEmail');
     const clientPhoneInput = document.getElementById('clientPhone');
 
     if (purchaseId) {
-      // ... (código sin cambios)
+      document.getElementById('modal-title').textContent = 'Confirma tu Sesión de Paquete';
+      document.getElementById('modal-price').textContent = 'Incluido en tu paquete';
+      confirmBtn.textContent = 'Confirmar Sesión';
+      const purchase = clientData.packages.find(p => p.id === purchaseId);
+      clientNameInput.value = purchase.nombreCliente;
+      clientEmailInput.value = purchase.email;
+      clientPhoneInput.value = purchase.telefono || '';
     } else {
-      // ... (código sin cambios)
+      document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
+      document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+      confirmBtn.textContent = 'Confirmar Cita';
+      clientNameInput.value = '';
+      clientEmailInput.value = '';
+      clientPhoneInput.value = '';
     }
 
     modal.style.display = 'flex';
@@ -458,7 +455,7 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
         } else {
             bookingData = { action: 'createBooking', serviceId, date: toISODateString(date), time: slotData.time, clientName: clientNameInput.value, clientEmail: clientEmailInput.value, clientPhone: clientPhoneInput.value, specialistId: slotData.specialistId };
         }
-       
+        
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(bookingData) });
             const result = await response.json();
@@ -467,18 +464,11 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
                 modalMessage.textContent = result.message;
                 modalMessage.className = 'success';
                 document.querySelector('#booking-modal .booking-form').style.display = 'none';
-                if (purchaseId) {
-                  // Actualiza los datos del cliente con la respuesta del servidor
-                  clientData.packages = result.updatedPackages;
-                  sessionStorage.setItem('amorVaelClientData', JSON.stringify(clientData));
-
-                  // Opcional pero recomendado: redirige a la lista de paquetes para que vea el cambio
-                  document.getElementById('close-modal').onclick = () => {
-                      document.getElementById('booking-modal').style.display = 'none';
-                      navigateTo('?view=my-packages');
-                  };
-             }     
-         } else {
+                if(purchaseId) {
+                  sessionStorage.removeItem('amorVaelClientData');
+                  clientData = null;
+                }
+            } else {
                 throw new Error(result.message);
             }
         } catch (error) {
@@ -564,6 +554,7 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
 
   function createCard(type, data) {
     const card = document.createElement('a');
+    card.href = '#';
     if (type === 'category') {
       card.className = 'category-card';
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="Imagen de ${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
@@ -596,7 +587,3 @@ async function renderServiceDetailView(serviceId, purchaseId = null) {
   router();
   window.addEventListener('popstate', router);
 });
-
-
-
-
