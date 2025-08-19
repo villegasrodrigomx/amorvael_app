@@ -409,145 +409,146 @@ document.addEventListener('DOMContentLoaded', () => {
     setupCalendar();
   }
 
-  async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
-  const service = allData.services.find(s => s.id === serviceId);
-  const modal = document.getElementById('booking-modal');
-  const modalMessage = document.getElementById('modal-message');
-  const confirmBtn = document.getElementById('confirm-booking-btn');
-  const clientInputs = modal.querySelector('.booking-form');
-  const paymentSection = modal.querySelector('#payment-section');
-
-  // Reseteamos el estado del modal
-  modalMessage.style.display = 'none';
-  clientInputs.style.display = 'block';
-  paymentSection.style.display = 'none';
-  confirmBtn.disabled = false;
-  confirmBtn.textContent = 'Continuar al Pago';
-
-  // Llenamos la información
-  document.getElementById('modal-service-name').textContent = service.nombre;
-  document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-  document.getElementById('modal-time').textContent = formatTime12h(slotData.time);
-  document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
-  document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-
-  // Limpiamos los campos
-  document.getElementById('clientName').value = '';
-  document.getElementById('clientEmail').value = '';
-  document.getElementById('clientPhone').value = '';
-
-  modal.style.display = 'flex';
-  document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
-
-  // Lógica del botón de confirmación
-  confirmBtn.onclick = async () => {
-    const clientName = document.getElementById('clientName').value;
-    const clientEmail = document.getElementById('clientEmail').value;
-    if (!clientName || !clientEmail) {
-      alert('Por favor, completa tu nombre y correo electrónico.');
-      return;
+async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
+    if (purchaseId && !clientData) {
+      alert("Tu sesión ha expirado. Por favor, identifícate de nuevo.");
+      return navigateTo('?view=client-login');
     }
-
-    confirmBtn.disabled = true;
-    confirmBtn.textContent = 'Procesando...';
-
-    // 1. Crear el Payment Intent en el backend
-    try {
-      const intentResponse = await fetch(API_ENDPOINT, {
-        method: 'POST',
-        body: JSON.stringify({ action: 'createPaymentIntent', serviceId: service.id })
-      });
-      const intentData = await intentResponse.json();
-      if (intentData.status !== 'success' || !intentData.clientSecret) {
-        throw new Error(intentData.message || 'No se pudo iniciar el pago.');
-      }
-
-      // 2. Preparamos el formulario de pago de Stripe
-      clientInputs.style.display = 'none';
-      paymentSection.style.display = 'block';
-      confirmBtn.textContent = 'Pagar y Agendar Cita';
-
-      const elements = stripe.elements({ clientSecret: intentData.clientSecret });
-      const paymentElement = elements.create('payment');
-      paymentElement.mount('#payment-element');
-
-      // 3. Reasignamos el click para confirmar el pago
-      confirmBtn.onclick = async () => {
-        confirmBtn.disabled = true;
-        confirmBtn.textContent = 'Confirmando pago...';
-
-        const { error } = await stripe.confirmPayment({
-          elements,
-          confirmParams: {
-            return_url: window.location.href.split('?')[0], // Redirige a la misma página
-            receipt_email: clientEmail,
-          },
-          // Si no rediriges, puedes manejar el resultado aquí
-          redirect: 'if_required' 
-        });
-
-        if (error) {
-          modalMessage.textContent = error.message;
-          modalMessage.className = 'error';
-          modalMessage.style.display = 'block';
-          confirmBtn.disabled = false;
-          confirmBtn.textContent = 'Pagar y Agendar Cita';
-        } else {
-            // 4. Pago exitoso, ahora creamos la reserva en nuestro sistema
-            await createBookingOnServer(serviceId, date, slotData);
-        }
-      };
-
-      confirmBtn.disabled = false;
-
-    } catch (error) {
-      modalMessage.textContent = 'Error: ' + error.message;
-      modalMessage.className = 'error';
-      modalMessage.style.display = 'block';
-      confirmBtn.disabled = false;
-      confirmBtn.textContent = 'Continuar al Pago';
-    }
-  };
-}
-
-async function createBookingOnServer(serviceId, date, slotData) {
+  
+    const service = allData.services.find(s => s.id === serviceId);
     const modal = document.getElementById('booking-modal');
     const modalMessage = document.getElementById('modal-message');
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    const clientInputsSection = modal.querySelector('.client-inputs');
     const paymentSection = modal.querySelector('#payment-section');
+    const closeModalBtn = document.getElementById('close-modal');
+  
+    // Reseteo completo del modal a su estado inicial
+    modalMessage.style.display = 'none';
+    clientInputsSection.style.display = 'block';
+    paymentSection.style.display = 'none';
+    confirmBtn.style.display = 'block';
+    confirmBtn.disabled = false;
+    document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
+    
+    closeModalBtn.onclick = () => modal.style.display = 'none';
+  
+    document.getElementById('modal-service-name').textContent = service.nombre;
+    document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('modal-time').textContent = formatTime12h(slotData.time);
+    document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
+    
+    const clientNameInput = document.getElementById('clientName');
+    const clientEmailInput = document.getElementById('clientEmail');
+    const clientPhoneInput = document.getElementById('clientPhone');
 
-    const bookingData = {
-        action: 'createBooking',
-        serviceId: serviceId,
-        date: toISODateString(date),
-        time: slotData.time,
-        clientName: document.getElementById('clientName').value,
-        clientEmail: document.getElementById('clientEmail').value,
-        clientPhone: document.getElementById('clientPhone').value,
-        specialistId: slotData.specialistId
-    };
-
-    try {
-        const bookResponse = await fetch(API_ENDPOINT, {
-            method: 'POST',
-            body: JSON.stringify(bookingData)
-        });
-        const bookResult = await bookResponse.json();
-
-        if (bookResult.status === 'success') {
-            document.getElementById('modal-title').textContent = '¡Cita Confirmada!';
-            paymentSection.style.display = 'none';
-            modalMessage.textContent = bookResult.message;
-            modalMessage.className = 'success';
-            modalMessage.style.display = 'block';
-        } else {
-            throw new Error(bookResult.message);
-        }
-    } catch (error) {
-        modalMessage.textContent = 'Tu pago fue exitoso, pero hubo un error al registrar tu cita. Por favor, contáctanos. Error: ' + error.message;
-        modalMessage.className = 'error';
-        modalMessage.style.display = 'block';
+    if (purchaseId) {
+      confirmBtn.textContent = 'Confirmar Sesión';
+      document.getElementById('modal-price').textContent = 'Incluido en tu paquete';
+      const purchase = clientData.packages.find(p => p.id === purchaseId);
+      clientNameInput.value = purchase.nombreCliente;
+      clientEmailInput.value = purchase.email;
+      clientPhoneInput.value = purchase.telefono || '';
+    } else {
+      confirmBtn.textContent = 'Continuar al Pago';
+      document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+      clientNameInput.value = '';
+      clientEmailInput.value = '';
+      clientPhoneInput.value = '';
     }
-}
+  
+    modal.style.display = 'flex';
+  
+    confirmBtn.onclick = async () => {
+      const clientName = clientNameInput.value;
+      const clientEmail = clientEmailInput.value;
+  
+      if (!clientName || !clientEmail) {
+        alert('Por favor, completa tu nombre y correo electrónico.');
+        return;
+      }
+      
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Procesando...';
+  
+      if (purchaseId) {
+        await createBookingOnServer(serviceId, date, slotData, purchaseId);
+      } else {
+        await processPayment(serviceId, date, slotData);
+      }
+    };
+  } 
+  
+async function createBookingOnServer(serviceId, date, slotData, purchaseId) {
+    const modal = document.getElementById('booking-modal');
+    const modalMessage = document.getElementById('modal-message');
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    const formInputs = modal.querySelector('.client-inputs'); // Seleccionamos solo los inputs
+    const paymentSection = modal.querySelector('#payment-section');
+    const closeModalBtn = document.getElementById('close-modal');
+  
+    const clientEmail = document.getElementById('clientEmail').value;
+  
+    let bookingData = {
+      action: purchaseId ? 'bookPackageSession' : 'createBooking',
+      serviceId: serviceId,
+      date: toISODateString(date),
+      time: slotData.time,
+      specialistId: slotData.specialistId,
+      clientName: document.getElementById('clientName').value,
+      clientEmail: clientEmail,
+      clientPhone: document.getElementById('clientPhone').value,
+    };
+    if (purchaseId) {
+      bookingData.purchaseId = purchaseId;
+    }
+  
+    try {
+      const bookResponse = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        body: JSON.stringify(bookingData)
+      });
+      const bookResult = await bookResponse.json();
+  
+      if (bookResult.status === 'success') {
+        document.getElementById('modal-title').textContent = '¡Cita Confirmada!';
+        
+        // Ocultamos las partes que ya no se necesitan
+        formInputs.style.display = 'none';
+        paymentSection.style.display = 'none';
+        
+        // Mostramos el mensaje de éxito
+        modalMessage.textContent = bookResult.message;
+        modalMessage.className = 'success';
+        modalMessage.style.display = 'block';
+  
+        // Reconfiguramos el botón principal como botón de salida
+        confirmBtn.textContent = 'Finalizar';
+        confirmBtn.disabled = false;
+        confirmBtn.style.display = 'block'; // Nos aseguramos de que sea visible
+        confirmBtn.onclick = () => {
+          modal.style.display = 'none';
+          navigateTo('/');
+        };
+  
+        // También nos aseguramos de que el botón 'x' de cierre haga lo mismo
+        closeModalBtn.onclick = () => {
+          modal.style.display = 'none';
+          navigateTo('/');
+        };
+  
+      } else {
+        throw new Error(bookResult.message);
+      }
+    } catch (error) {
+      modalMessage.textContent = 'Tu pago fue exitoso, pero hubo un error al registrar tu cita. Por favor, contáctanos. Error: ' + error.message;
+      modalMessage.className = 'error';
+      modalMessage.style.display = 'block';
+      confirmBtn.style.display = 'block';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Intentar de nuevo';
+    }
+  }
   
   function openPurchaseModal(pkg) {
     const modal = document.getElementById('booking-modal');
@@ -655,5 +656,6 @@ async function createBookingOnServer(serviceId, date, slotData) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
