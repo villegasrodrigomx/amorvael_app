@@ -9,9 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- ROUTER PRINCIPAL ---
   function router() {
-    // Recargamos clientData en cada navegación para asegurar que esté actualizado
     clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
-    
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const category = params.get('category');
@@ -19,31 +17,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const packageId = params.get('package');
     const purchaseId = params.get('purchaseId');
 
-    if (view === 'client-login') {
-      renderClientLoginView();
-    } else if (view === 'my-packages') {
-      renderClientPackagesView();
-    } else if (view === 'book-package-session') {
-      renderPackageServicesView(purchaseId);
-    } else if (packageId) {
-      renderPackageDetailView(packageId);
-    } else if (serviceId) {
-      renderServiceDetailView(serviceId, purchaseId);
-    } else if (category) {
-      renderServicesView(category);
-    } else if (view === 'packages') {
-      renderPackagesView();
-    } else {
-      renderCategoriesView();
-    }
+    if (view === 'client-login') renderClientLoginView();
+    else if (view === 'my-packages') renderClientPackagesView();
+    else if (view === 'book-package-session') renderPackageServicesView(purchaseId);
+    else if (packageId) renderPackageDetailView(packageId);
+    else if (serviceId) renderServiceDetailView(serviceId, purchaseId);
+    else if (category) renderServicesView(category);
+    else if (view === 'packages') renderPackagesView();
+    else renderCategoriesView();
   }
 
   // --- FUNCIÓN PARA RENDERIZAR VISTAS ---
   function renderView(templateId) {
     const template = document.getElementById(templateId);
     if (!template) {
-      console.error(`La plantilla con ID "${templateId}" no fue encontrada.`);
-      appContainer.innerHTML = `<p class="error-message">Error de aplicación: La vista no existe.</p>`;
+      appContainer.innerHTML = `<p class="error-message">Error: La vista no existe.</p>`;
       return null;
     }
     appContainer.innerHTML = '';
@@ -62,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
       navigateTo('?view=client-login');
     });
     const categoryGrid = view.querySelector('.category-grid');
+    categoryGrid.innerHTML = ''; 
     categoryGrid.appendChild(document.getElementById('template-loading').content.cloneNode(true));
     try {
       if (!allData) allData = await fetchAppData();
@@ -419,11 +408,11 @@ async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
     const modal = document.getElementById('booking-modal');
     const modalMessage = document.getElementById('modal-message');
     const confirmBtn = document.getElementById('confirm-booking-btn');
-    const clientInputsSection = modal.querySelector('.client-inputs');
+    const clientInputsSection = modal.querySelector('.client-inputs'); // Ahora sí encontrará este elemento
     const paymentSection = modal.querySelector('#payment-section');
     const closeModalBtn = document.getElementById('close-modal');
   
-    // Reseteo completo del modal a su estado inicial
+    // Reseteo completo del modal
     modalMessage.style.display = 'none';
     clientInputsSection.style.display = 'block';
     paymentSection.style.display = 'none';
@@ -477,13 +466,65 @@ async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
         await processPayment(serviceId, date, slotData);
       }
     };
-  } 
+  }
   
-async function createBookingOnServer(serviceId, date, slotData, purchaseId) {
+async function processPayment(serviceId, date, slotData) {
+    const modalMessage = document.getElementById('modal-message');
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    const clientInputsSection = document.querySelector('#booking-modal .client-inputs');
+    const paymentSection = document.querySelector('#booking-modal #payment-section');
+
+    try {
+      const intentResponse = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'createPaymentIntent', serviceId: serviceId })
+      });
+      const intentData = await intentResponse.json();
+      if (intentData.status !== 'success' || !intentData.clientSecret) {
+        throw new Error(intentData.message || 'No se pudo iniciar el pago.');
+      }
+  
+      clientInputsSection.style.display = 'none';
+      paymentSection.style.display = 'block';
+      confirmBtn.textContent = 'Pagar y Agendar Cita';
+  
+      const elements = stripe.elements({ clientSecret: intentData.clientSecret });
+      const paymentElement = elements.create('payment');
+      paymentElement.mount('#payment-element');
+      confirmBtn.disabled = false;
+  
+      confirmBtn.onclick = async () => {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = 'Confirmando pago...';
+  
+        const { error, paymentIntent } = await stripe.confirmPayment({
+          elements,
+          redirect: 'if_required' 
+        });
+  
+        if (error) { throw new Error(error.message); }
+        
+        if (paymentIntent.status === 'succeeded') {
+          await createBookingOnServer(serviceId, date, slotData, null);
+        } else {
+          throw new Error('El pago no fue exitoso.');
+        }
+      };
+  
+    } catch (error) {
+      modalMessage.textContent = 'Error: ' + error.message;
+      modalMessage.className = 'error';
+      modalMessage.style.display = 'block';
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = 'Continuar al Pago';
+    }
+  }
+  
+  async function createBookingOnServer(serviceId, date, slotData, purchaseId) {
     const modal = document.getElementById('booking-modal');
     const modalMessage = document.getElementById('modal-message');
     const confirmBtn = document.getElementById('confirm-booking-btn');
-    const formInputs = modal.querySelector('.client-inputs'); // Seleccionamos solo los inputs
+    const clientInputsSection = modal.querySelector('.client-inputs');
     const paymentSection = modal.querySelector('#payment-section');
     const closeModalBtn = document.getElementById('close-modal');
   
@@ -512,26 +553,20 @@ async function createBookingOnServer(serviceId, date, slotData, purchaseId) {
   
       if (bookResult.status === 'success') {
         document.getElementById('modal-title').textContent = '¡Cita Confirmada!';
-        
-        // Ocultamos las partes que ya no se necesitan
-        formInputs.style.display = 'none';
+        clientInputsSection.style.display = 'none';
         paymentSection.style.display = 'none';
-        
-        // Mostramos el mensaje de éxito
         modalMessage.textContent = bookResult.message;
         modalMessage.className = 'success';
         modalMessage.style.display = 'block';
   
-        // Reconfiguramos el botón principal como botón de salida
         confirmBtn.textContent = 'Finalizar';
         confirmBtn.disabled = false;
-        confirmBtn.style.display = 'block'; // Nos aseguramos de que sea visible
+        confirmBtn.style.display = 'block';
         confirmBtn.onclick = () => {
           modal.style.display = 'none';
           navigateTo('/');
         };
   
-        // También nos aseguramos de que el botón 'x' de cierre haga lo mismo
         closeModalBtn.onclick = () => {
           modal.style.display = 'none';
           navigateTo('/');
@@ -656,6 +691,7 @@ async function createBookingOnServer(serviceId, date, slotData, purchaseId) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
 
