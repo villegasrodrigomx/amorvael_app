@@ -255,7 +255,7 @@ body {
   grid-template-columns: repeat(7, 1fr);
   gap: 5px;
 }
-.calendar-grid .weekdays div {
+.calendar-grid.weekdays div {
   text-align: center;
   font-weight: 500;
   color: #aaa;
@@ -293,7 +293,7 @@ body {
 .slot:hover { background-color: var(--primary-color); color: var(--white); }
 
 /* =================================================================
-   Modal de Reserva
+   Modal de Reserva (CON CORRECCIÓN DE SCROLL)
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -307,7 +307,9 @@ body {
   align-items: center;
   z-index: 1000;
   animation: fadeIn 0.3s ease;
+  padding: 20px 0; /* Añade espacio vertical por si el modal es muy alto */
 }
+
 .modal-content {
   background-color: var(--white);
   padding: 30px;
@@ -316,7 +318,12 @@ body {
   max-width: 500px;
   position: relative;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  /* --- ESTA ES LA CORRECCIÓN CLAVE --- */
+  max-height: 90vh; /* La altura máxima será el 90% de la altura de la pantalla */
+  overflow-y: auto; /* Añade una barra de scroll vertical SI es necesario */
+  /* --- FIN DE LA CORRECCIÓN --- */
 }
+
 .close-modal-btn {
   position: absolute;
   top: 10px;
@@ -399,7 +406,7 @@ body {
 .client-package-card h4 { margin: 0 0 10px 0; font-weight: 500; }
 
 /* =================================================================
-   Utilidades (Loading, Errores)
+   Utilidades (Loading, Errores, Botones)
    ================================================================= */
 .loading-spinner {
   border: 4px solid var(--border-color);
