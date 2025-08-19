@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
 
   const API_ENDPOINT = '/.netlify/functions/engine';
-  const stripe = Stripe('AQUI_PEGA_TU_CLAVE_PUBLICABLE_pk_test_...');
+  const stripe = Stripe('pk_test_51Rxg7P8UvBXj8rjlnXh766yCiMdEONim6f16TNaDa9OzhpC28P5wosnr0BJw4H1UAM0vAJRJfbmQJpMjSx4JEApl00BBWO7j9r');
 
   // --- ROUTER PRINCIPAL ---
   function router() {
@@ -655,4 +655,5 @@ async function createBookingOnServer(serviceId, date, slotData) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
