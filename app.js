@@ -399,59 +399,67 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
-    if (purchaseId && !clientData) {
-      alert("Tu sesión ha expirado. Por favor, identifícate de nuevo.");
-      return navigateTo('?view=client-login');
-    }
-  
-    const service = allData.services.find(s => s.id === serviceId);
-    const modal = document.getElementById('booking-modal');
-    const modalMessage = document.getElementById('modal-message');
-    const confirmBtn = document.getElementById('confirm-booking-btn');
-    const clientInputsSection = modal.querySelector('.client-inputs'); // Ahora sí encontrará este elemento
-    const paymentSection = modal.querySelector('#payment-section');
-    const closeModalBtn = document.getElementById('close-modal');
-  
-    // Reseteo completo del modal
-    modalMessage.style.display = 'none';
-    clientInputsSection.style.display = 'block';
-    paymentSection.style.display = 'none';
-    confirmBtn.style.display = 'block';
-    confirmBtn.disabled = false;
-    document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
-    
-    closeModalBtn.onclick = () => modal.style.display = 'none';
-  
-    document.getElementById('modal-service-name').textContent = service.nombre;
-    document.getElementById('modal-date').textContent = date.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    document.getElementById('modal-time').textContent = formatTime12h(slotData.time);
-    document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
-    
-    const clientNameInput = document.getElementById('clientName');
-    const clientEmailInput = document.getElementById('clientEmail');
-    const clientPhoneInput = document.getElementById('clientPhone');
+  const service = allData.services.find(s => s.id === serviceId);
+  const modal = document.getElementById('booking-modal');
+  // ... (declaraciones de variables del modal)
+  const paymentOptionsSection = modal.querySelector('#payment-options-section');
+  const paymentSection = modal.querySelector('#payment-section');
 
-    if (purchaseId) {
-      confirmBtn.textContent = 'Confirmar Sesión';
-      document.getElementById('modal-price').textContent = 'Incluido en tu paquete';
-      const purchase = clientData.packages.find(p => p.id === purchaseId);
-      clientNameInput.value = purchase.nombreCliente;
-      clientEmailInput.value = purchase.email;
-      clientPhoneInput.value = purchase.telefono || '';
-    } else {
-      confirmBtn.textContent = 'Continuar al Pago';
-      document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-      clientNameInput.value = '';
-      clientEmailInput.value = '';
-      clientPhoneInput.value = '';
-    }
+  // ... (reseteo del modal)
   
-    modal.style.display = 'flex';
+  document.getElementById('modal-specialist-name').textContent = slotData.specialistName;
   
+  const clientNameInput = document.getElementById('clientName');
+  const clientEmailInput = document.getElementById('clientEmail');
+  const clientPhoneInput = document.getElementById('clientPhone');
+
+  // Lógica principal
+  if (purchaseId) {
+    // --- CITA DE PAQUETE ---
+    confirmBtn.textContent = 'Confirmar Sesión';
+    document.getElementById('modal-price').textContent = 'Incluido en tu paquete';
+    paymentOptionsSection.style.display = 'none'; // Ocultamos opciones de pago
+    paymentSection.style.display = 'none'; // Ocultamos formulario de tarjeta
+
+    const purchase = clientData.packages.find(p => p.id === purchaseId);
+    clientNameInput.value = purchase.nombreCliente;
+    clientEmailInput.value = purchase.email;
+    clientPhoneInput.value = purchase.telefono || '';
+    
+    confirmBtn.onclick = async () => {
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Procesando...';
+      await createBookingOnServer(serviceId, date, slotData, purchaseId);
+    };
+
+  } else {
+    // --- CITA INDIVIDUAL ---
+    document.getElementById('modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+    clientNameInput.value = '';
+    clientEmailInput.value = '';
+    clientPhoneInput.value = '';
+    
+    paymentOptionsSection.style.display = 'block'; // Mostramos opciones de pago
+    const paymentRadios = document.querySelectorAll('input[name="payment-method"]');
+    
+    // Función para actualizar la vista del botón y Stripe
+    const updatePaymentView = () => {
+      const selectedMethod = document.querySelector('input[name="payment-method"]:checked').value;
+      if (selectedMethod === 'card') {
+        paymentSection.style.display = 'block';
+        confirmBtn.textContent = 'Continuar al Pago';
+      } else {
+        paymentSection.style.display = 'none';
+        confirmBtn.textContent = 'Confirmar Cita';
+      }
+    };
+    
+    paymentRadios.forEach(radio => radio.onchange = updatePaymentView);
+    updatePaymentView(); // Llamada inicial
+
     confirmBtn.onclick = async () => {
       const clientName = clientNameInput.value;
       const clientEmail = clientEmailInput.value;
-  
       if (!clientName || !clientEmail) {
         alert('Por favor, completa tu nombre y correo electrónico.');
         return;
@@ -459,14 +467,20 @@ async function openBookingModal(serviceId, date, slotData, purchaseId = null) {
       
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Procesando...';
-  
-      if (purchaseId) {
-        await createBookingOnServer(serviceId, date, slotData, purchaseId);
-      } else {
+      
+      const selectedMethod = document.querySelector('input[name="payment-method"]:checked').value;
+      
+      if (selectedMethod === 'card') {
         await processPayment(serviceId, date, slotData);
+      } else {
+        const paymentStatus = selectedMethod === 'transfer' ? 'Pendiente de transferencia' : 'Pago en sitio';
+        await createBookingOnServer(serviceId, date, slotData, null, paymentStatus);
       }
     };
   }
+
+  modal.style.display = 'flex';
+}
   
 async function processPayment(serviceId, date, slotData) {
     const modalMessage = document.getElementById('modal-message');
@@ -540,6 +554,9 @@ async function processPayment(serviceId, date, slotData) {
       clientEmail: clientEmail,
       clientPhone: document.getElementById('clientPhone').value,
     };
+    if (!purchaseId) {
+      bookingData.paymentStatus = paymentStatus;
+    }    
     if (purchaseId) {
       bookingData.purchaseId = purchaseId;
     }
@@ -691,6 +708,7 @@ async function processPayment(serviceId, date, slotData) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
 
