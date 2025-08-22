@@ -161,27 +161,18 @@
                         <input type="tel" id="clientPhone">
                     </div>
                 </div>
-
                 <div id="payment-options-section" class="form-group" style="display: none;">
                     <label>¿Cómo te gustaría pagar?</label>
                     <div class="payment-options">
-                        <label>
-                            <input type="radio" name="payment-method" value="card" checked> Pagar ahora con tarjeta
-                        </label>
-                        <label>
-                            <input type="radio" name="payment-method" value="transfer"> Pagar por transferencia
-                        </label>
-                        <label>
-                            <input type="radio" name="payment-method" value="cash"> Pagar en el spa
-                        </label>
+                        <label><input type="radio" name="payment-method" value="card" checked> Pagar ahora con tarjeta</label>
+                        <label><input type="radio" name="payment-method" value="transfer"> Pagar por transferencia</label>
+                        <label><input type="radio" name="payment-method" value="cash"> Pagar en el spa</label>
                     </div>
                 </div>
-
                 <div id="payment-section" style="display: none;">
                     <label>Datos de la tarjeta:</label>
                     <div id="payment-element" class="StripeElement"></div>
                 </div>
-
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
                 <div id="modal-message" style="display: none;"></div>
             </div>
