@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
 
   const API_ENDPOINT = '/.netlify/functions/engine';
-  const stripe = Stripe('pk_test_51Rxg7P8UvBXj8rjlnXh766yCiMdEONim6f16TNaDa9OzhpC28P5wosnr0BJw4H1UAM0vAJRJfbmQJpMjSx4JEApl00BBWO7j9r');
+  const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
   // --- ROUTER PRINCIPAL ---
   function router() {
@@ -691,6 +691,7 @@ async function processPayment(serviceId, date, slotData) {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
 
