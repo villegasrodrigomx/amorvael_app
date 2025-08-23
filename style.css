@@ -443,3 +443,22 @@ body {
     background-color: #ccc;
     cursor: not-allowed;
 }
+
+/* ESTILOS AÑADIDOS AL FINAL */
+#transfer-details {
+  margin-top: 15px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9em;
+  line-height: 1.5;
+}
+
+#transfer-details p {
+  margin: 0 0 10px 0;
+}
+
+#transfer-details p:last-child {
+  margin-bottom: 0;
+}
