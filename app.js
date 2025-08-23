@@ -2,8 +2,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
-  const API_ENDPOINT = '/.netlify/functions/engine';
-  const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
+  
+  // --- CONFIGURACIÓN ---
+  // Reemplaza con la URL de tu script de Google Apps Script desplegado
+  const API_ENDPOINT = 'URL_DE_TU_APPS_SCRIPT_FINAL_AQUI'; 
+  // Reemplaza con tu clave PUBLICABLE de Stripe (la que empieza con pk_test_ o pk_live_)
+  const stripe = Stripe('TU_CLAVE_PUBLICABLE_DE_STRIPE_AQUI');
 
   // --- ROUTER Y FUNCIONES DE RENDERIZADO ---
   function router() {
@@ -285,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
         transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
         confirmBtn.textContent = method === 'card' ? 'Continuar al Pago' : 'Confirmar Cita';
       };
-      modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updateView);
+      modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
       updatePaymentView();
     }
     
@@ -413,13 +417,13 @@ document.addEventListener('DOMContentLoaded', () => {
     card.href = '#';
     if (type === 'category') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}"><div class="category-card-title"><h3>${data.name}</h3></div>`;
+      card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="https://images.unsplash.com/photo-1540555233522-26a9926973a1?auto=format&fit=crop&q=80&w=1000" alt="Paquetes"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+      card.innerHTML = `<img src="https://images.unsplash.com/photo-1540555233522-26a9926973a1?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
-      card.innerHTML = `<div><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><i class="ph-bold ph-caret-right"></i>`;
+      card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
     } else if (type === 'package-item') {
       card.className = 'package-card';
       card.innerHTML = `<h4>${data.nombre}</h4><p>$${data.precio.toLocaleString('es-MX')} MXN</p>`;
@@ -459,11 +463,181 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- El resto de las vistas sin cambios van aquí ---
-  async function renderClientLoginView() { /* ...código sin cambios... */ }
-  async function renderClientPackagesView() { /* ...código sin cambios... */ }
-  async function renderPackageServicesView(purchaseId) { /* ...código sin cambios... */ }
-  async function renderPackageDetailView(packageId) { /* ...código sin cambios... */ }
-  function openPurchaseModal(pkg) { /* ...código sin cambios... */ }
+    async function renderClientLoginView() {
+    const view = renderView('template-client-login-view');
+    if (!view) return;
+    view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo('/'); });
+    view.querySelector('#find-packages-btn').addEventListener('click', async () => {
+      const emailInput = view.querySelector('#client-login-email');
+      const messageEl = view.querySelector('#login-message');
+      const email = emailInput.value.trim().toLowerCase();
+      if (!email) {
+        messageEl.textContent = 'Por favor, introduce un correo.';
+        return;
+      }
+      messageEl.textContent = 'Buscando...';
+      const url = `${API_ENDPOINT}?action=getClientPackages&clientEmail=${encodeURIComponent(email)}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.status === 'success' && data.clientPackages.length > 0) {
+          clientData = { email, packages: data.clientPackages };
+          sessionStorage.setItem('amorVaelClientData', JSON.stringify(clientData));
+          navigateTo('?view=my-packages');
+        } else {
+          messageEl.textContent = 'No se encontraron paquetes para este correo, o no tienes sesiones restantes.';
+        }
+      } catch (error) {
+        messageEl.textContent = 'Error al buscar paquetes.';
+      }
+    });
+  }
+
+  async function renderClientPackagesView() {
+    const view = renderView('template-client-packages-view');
+    if (!view) return;
+    view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); clearClientDataAndGoHome(); });
+    const listEl = view.querySelector('#client-package-list');
+    if (!clientData || clientData.packages.length === 0) {
+      listEl.innerHTML = '<p>No tienes paquetes activos. <a href="#" id="try-another-email">Intenta con otro correo</a>.</p>';
+      listEl.querySelector('#try-another-email').addEventListener('click', (e) => {
+          e.preventDefault();
+          navigateTo('?view=client-login');
+      });
+      return;
+    }
+    listEl.innerHTML = '';
+    clientData.packages.forEach(pkg => {
+      const card = document.createElement('div');
+      card.className = 'client-package-card';
+      const remainingServicesArray = pkg.serviciosRestantes ? pkg.serviciosRestantes.split(',') : [];
+      card.innerHTML = `
+        <h4>${pkg.nombrePaquete}</h4>
+        <p><strong>Sesiones restantes:</strong> ${remainingServicesArray.length}</p>
+      `;
+      const button = document.createElement('button');
+      button.className = 'cta-button';
+      button.textContent = 'Agendar Sesión';
+      button.onclick = () => navigateTo(`?view=book-package-session&purchaseId=${pkg.id}`);
+      card.appendChild(button);
+      listEl.appendChild(card);
+    });
+  }
+
+  async function renderPackageServicesView(purchaseId) {
+    const view = renderView('template-package-services-view');
+    if (!view) return;
+    view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo('?view=my-packages'); });
+    const serviceList = view.querySelector('.service-list');
+    try {
+      if (!allData) allData = await fetchAppData();
+      if (!clientData) {
+          navigateTo('?view=client-login');
+          return;
+      }
+      const purchase = clientData.packages.find(p => p.id === purchaseId);
+      if (!purchase) throw new Error('Compra no encontrada.');
+      
+      const remainingServiceIds = purchase.serviciosRestantes ? purchase.serviciosRestantes.split(',') : [];
+      serviceList.innerHTML = '';
+
+      if (remainingServiceIds.length === 0) {
+        serviceList.innerHTML = '<p>Ya has agendado todas las sesiones de este paquete.</p>';
+        return;
+      }
+
+      remainingServiceIds.forEach(serviceId => {
+        const service = allData.services.find(s => s.id === serviceId);
+        if (service) {
+          const serviceCard = createCard('service', service);
+          serviceCard.addEventListener('click', (e) => {
+              e.preventDefault();
+              navigateTo(`?service=${service.id}&purchaseId=${purchaseId}`);
+          });
+          serviceList.appendChild(serviceCard);
+        }
+      });
+    } catch (error) {
+      serviceList.innerHTML = `<p class="error-message">${error.message}</p>`;
+    }
+  }
+
+    async function renderPackageDetailView(packageId) {
+    const view = renderView('template-package-detail-view');
+    if (!view) return;
+    view.querySelector('.back-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        navigateTo('?view=packages');
+    });
+    view.prepend(document.getElementById('template-loading').content.cloneNode(true));
+    try {
+      if (!allData) allData = await fetchAppData();
+      const pkg = allData.packages.find(p => p.id === packageId);
+      if (!pkg) throw new Error('Paquete no encontrado.');
+      view.querySelector('.loading-spinner')?.remove();
+      view.querySelector('.view-title').textContent = pkg.nombre;
+      view.querySelector('.package-price').textContent = `$${pkg.precio.toLocaleString('es-MX')} MXN`;
+      const servicesIncludedList = view.querySelector('.package-services-included ul');
+      servicesIncludedList.innerHTML = '';
+      pkg.servicios.forEach(serviceId => {
+        const service = allData.services.find(s => s.id === serviceId);
+        if (service) {
+          const listItem = document.createElement('li');
+          listItem.textContent = service.nombre;
+          servicesIncludedList.appendChild(listItem);
+        }
+      });
+      view.querySelector('#buy-package-btn').addEventListener('click', () => {
+        openPurchaseModal(pkg);
+      });
+    } catch (error) {
+      view.innerHTML = `<p class="error-message">Error al cargar el paquete: ${error.message}</p>`;
+    }
+  }
+
+  function openPurchaseModal(pkg) {
+    const modal = document.getElementById('booking-modal');
+    document.getElementById('modal-title').textContent = 'Confirmar Compra de Paquete';
+    document.querySelector('#booking-modal .booking-summary').innerHTML = `<p><strong>Paquete:</strong> <span id="modal-service-name">${pkg.nombre}</span></p><p><strong>Precio:</strong> <span id="modal-price">$${pkg.precio.toLocaleString('es-MX')} MXN</span></p>`;
+    document.querySelector('#booking-modal .booking-form').style.display = 'block';
+    const modalMessage = document.getElementById('modal-message');
+    modalMessage.style.display = 'none';
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirmar Compra';
+    modal.style.display = 'flex';
+    document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+    confirmBtn.onclick = async () => {
+        const clientName = document.getElementById('clientName').value;
+        const clientEmail = document.getElementById('clientEmail').value;
+        const clientPhone = document.getElementById('clientPhone').value;
+        if (!clientName || !clientEmail || !clientPhone) {
+            alert('Por favor, completa todos los campos.');
+            return;
+        }
+        confirmBtn.textContent = 'Procesando...';
+        confirmBtn.disabled = true;
+        const purchaseData = { action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone };
+        try {
+            const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(purchaseData) });
+            const result = await response.json();
+            if (result.status === 'success') {
+                document.getElementById('modal-title').textContent = '¡Compra Exitosa!';
+                modalMessage.textContent = result.message;
+                modalMessage.className = 'success';
+                document.querySelector('#booking-modal .booking-form').style.display = 'none';
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            modalMessage.textContent = error.message;
+            modalMessage.className = 'error';
+            confirmBtn.textContent = 'Confirmar Compra';
+            confirmBtn.disabled = false;
+        }
+        modalMessage.style.display = 'block';
+    };
+  }
 
   router();
   window.addEventListener('popstate', router);
