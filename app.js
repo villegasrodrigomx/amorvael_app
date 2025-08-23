@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // --- CONFIGURACIÓN ---
   // Reemplaza con la URL de tu script de Google Apps Script desplegado
-  const API_ENDPOINT = '/.netlify/functions/engine';
+  const API_ENDPOINT = 'URL_DE_TU_APPS_SCRIPT_FINAL_AQUI'; 
   // Reemplaza con tu clave PUBLICABLE de Stripe (la que empieza con pk_test_ o pk_live_)
-  const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
+  const stripe = Stripe('TU_CLAVE_PUBLICABLE_DE_STRIPE_AQUI');
 
   // --- ROUTER Y FUNCIONES DE RENDERIZADO ---
   function router() {
@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clientInputs = document.querySelector('#booking-modal .client-inputs');
     const paymentSection = document.querySelector('#booking-modal #payment-section');
     const paymentOptions = document.querySelector('#booking-modal #payment-options-section');
+    const transferDetails = document.querySelector('#booking-modal #transfer-details');
 
     try {
       const intentRes = await fetch(API_ENDPOINT, {
@@ -333,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       clientInputs.style.display = 'none';
       paymentOptions.style.display = 'none';
+      transferDetails.style.display = 'none';
       paymentSection.style.display = 'block';
       confirmBtn.textContent = 'Pagar y Agendar';
       
@@ -420,7 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+      card.innerHTML = `<img src="https://images.unsplash.com/photo-1540555233522-26a9926973a1?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
       card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
@@ -433,10 +435,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getCategoryImage(categoryName) {
     const images = {
-      'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
-      'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
-      'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
-      'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'
+      'Uñas': 'https://images.unsplash.com/photo-1604902396837-786d70817458?auto=format&fit=crop&q=80&w=1000',
+      'Pestañas': 'https://images.unsplash.com/photo-1599387823531-c0353c84e1b5?auto=format&fit=crop&q=80&w=1000',
+      'Masajes': 'https://images.unsplash.com/photo-1598233822764-33d479a61353?auto=format&fit=crop&q=80&w=1000',
+      'Faciales': 'https://images.unsplash.com/photo-1598603659421-4b1100b73b18?auto=format&fit=crop&q=80&w=1000'
     };
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
   }
@@ -462,8 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
     navigateTo('/');
   }
 
-  // --- El resto de las vistas sin cambios van aquí ---
-    async function renderClientLoginView() {
+  async function renderClientLoginView() {
     const view = renderView('template-client-login-view');
     if (!view) return;
     view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo('/'); });
@@ -540,12 +541,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const remainingServiceIds = purchase.serviciosRestantes ? purchase.serviciosRestantes.split(',') : [];
       serviceList.innerHTML = '';
-
       if (remainingServiceIds.length === 0) {
         serviceList.innerHTML = '<p>Ya has agendado todas las sesiones de este paquete.</p>';
         return;
       }
-
       remainingServiceIds.forEach(serviceId => {
         const service = allData.services.find(s => s.id === serviceId);
         if (service) {
@@ -562,7 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-    async function renderPackageDetailView(packageId) {
+  async function renderPackageDetailView(packageId) {
     const view = renderView('template-package-detail-view');
     if (!view) return;
     view.querySelector('.back-link').addEventListener('click', (e) => {
@@ -642,6 +641,3 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
-
-
-
