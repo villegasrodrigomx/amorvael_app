@@ -420,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="https://images.unsplash.com/photo-1540555233522-26a9926973a1?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+      card.innerHTML = `<img src="http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
       card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
@@ -642,5 +642,6 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
 
 
