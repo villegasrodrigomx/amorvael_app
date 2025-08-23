@@ -12,12 +12,17 @@
 
     <header class="main-header">
         <a href="index.html" style="text-decoration: none;">
-            <h1>AMOR-VAEL Beauty Spa, Nails & Lashes</h1>
+            <h1>AMOR-VAEL Beauty Spa</h1>
         </a>
     </header>
 
     <main id="app-container" class="container">
-        </main>
+        <!-- Las vistas de la aplicación se cargarán aquí -->
+    </main>
+
+    <!-- ====================================================== -->
+    <!-- PLANTILLAS DE VISTAS (Templates)                       -->
+    <!-- ====================================================== -->
 
     <template id="template-loading">
         <div class="loading-spinner"></div>
@@ -135,6 +140,9 @@
         </div>
     </template>
 
+    <!-- ====================================================== -->
+    <!-- MODAL DE RESERVA (Fuera de las plantillas)             -->
+    <!-- ====================================================== -->
     <div id="booking-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <button class="close-modal-btn" id="close-modal">&times;</button>
@@ -168,6 +176,12 @@
                         <label><input type="radio" name="payment-method" value="transfer"> Pagar por transferencia</label>
                         <label><input type="radio" name="payment-method" value="cash"> Pagar en el spa</label>
                     </div>
+                </div>
+                <div id="transfer-details" style="display: none;">
+                    <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
+                    <p><strong>Banco:</strong> [Nombre de tu Banco]<br>
+                       <strong>CLABE:</strong> [Tu número de CLABE]<br>
+                       <strong>Titular:</strong> [Nombre del titular]</p>
                 </div>
                 <div id="payment-section" style="display: none;">
                     <label>Datos de la tarjeta:</label>
