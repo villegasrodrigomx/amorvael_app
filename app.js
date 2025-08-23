@@ -5,9 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // --- CONFIGURACIÓN ---
   // Reemplaza con la URL de tu script de Google Apps Script desplegado
-  const API_ENDPOINT = 'URL_DE_TU_APPS_SCRIPT_FINAL_AQUI'; 
+  const API_ENDPOINT = '/.netlify/functions/engine';
   // Reemplaza con tu clave PUBLICABLE de Stripe (la que empieza con pk_test_ o pk_live_)
-  const stripe = Stripe('TU_CLAVE_PUBLICABLE_DE_STRIPE_AQUI');
+  const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
   // --- ROUTER Y FUNCIONES DE RENDERIZADO ---
   function router() {
@@ -642,3 +642,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
