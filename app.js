@@ -86,26 +86,45 @@ document.addEventListener('DOMContentLoaded', () => {
   async function renderServicesView(categoryName) {
     const view = renderView('template-services-view');
     if (!view) return;
-    view.querySelector('.view-title').textContent = decodeURIComponent(categoryName);
+    const decodedCategoryName = decodeURIComponent(categoryName);
+    view.querySelector('.view-title').textContent = decodedCategoryName;
     view.querySelector('.back-link').addEventListener('click', (e) => {
       e.preventDefault();
       navigateTo('/');
     });
-    const serviceList = view.querySelector('.service-list');
-    serviceList.innerHTML = '';
+    const listContainer = view.querySelector('.service-list');
+    listContainer.innerHTML = '';
     try {
       if (!allData) allData = await fetchAppData();
-      const servicesInCategory = allData.services.filter(s => s.categoria === decodeURIComponent(categoryName));
-      servicesInCategory.forEach(service => {
-        const serviceCard = createCard('service', service);
-        serviceCard.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateTo(`?service=${service.id}`);
+      // 1. Mostrar paquetes asignados a esta categoría
+      const packagesInCategory = allData.packages.filter(p => p.categoria === decodedCategoryName);
+      if (packagesInCategory.length > 0) {
+        packagesInCategory.forEach(pkg => {
+          const packageCard = createCard('package-item', pkg);
+          packageCard.addEventListener('click', (e) => {
+            e.preventDefault();
+            navigateTo(`?package=${pkg.id}`);
+          });
+          listContainer.appendChild(packageCard);
         });
-        serviceList.appendChild(serviceCard);
-      });
+      }
+      // 2. Mostrar servicios de esta categoría
+      const servicesInCategory = allData.services.filter(s => s.categoria === decodedCategoryName);
+      if(servicesInCategory.length > 0) {
+        servicesInCategory.forEach(service => {
+            const serviceCard = createCard('service', service);
+            serviceCard.addEventListener('click', (e) => {
+                e.preventDefault();
+                navigateTo(`?service=${service.id}`);
+            });
+            listContainer.appendChild(serviceCard);
+        });
+      }
+      if (packagesInCategory.length === 0 && servicesInCategory.length === 0) {
+        listContainer.innerHTML = '<p>No hay servicios o paquetes en esta categoría.</p>';
+      }
     } catch (error) {
-      serviceList.innerHTML = `<p class="error-message">Error al cargar servicios: ${error.message}</p>`;
+      listContainer.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`;
     }
   }
   
@@ -162,16 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const month = currentDate.getMonth(), year = currentDate.getFullYear();
       const firstDayOfMonth = new Date(year, month, 1).getDay();
       const lastDateOfMonth = new Date(year, month + 1, 0).getDate();
-      
       for (let i = 0; i < firstDayOfMonth; i++) { calendarDaysEl.innerHTML += `<div class="calendar-day disabled"></div>`; }
-      
       for (let i = 1; i <= lastDateOfMonth; i++) {
         const dayDate = new Date(year, month, i);
         const isoDate = toISODateString(dayDate);
         const dayCell = document.createElement('div');
         dayCell.className = 'calendar-day';
         dayCell.textContent = i;
-        
         if (hoyOficial && isoDate <= hoyOficial) {
           dayCell.classList.add('disabled');
         } else {
@@ -184,14 +200,12 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarDaysEl.appendChild(dayCell);
       }
     }
-
     async function fetchAndDisplaySlots(serviceId, date, purchaseId) {
       const slotsContainer = view.querySelector('.slots-container');
       const slotsEl = view.querySelector('#availableSlots');
       slotsContainer.style.display = 'block';
       slotsEl.innerHTML = '';
       slotsEl.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-      
       const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${toISODateString(date)}`;
       try {
         const response = await fetch(url);
@@ -212,7 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
         slotsEl.innerHTML = '<p class="error-message">Error al cargar disponibilidad.</p>';
       }
     }
-
     async function setupCalendar() {
         try {
             const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=check`;
@@ -226,10 +239,8 @@ document.addEventListener('DOMContentLoaded', () => {
             calendarDaysEl.innerHTML = `<p class="error-message">No se pudo inicializar el calendario.</p>`;
         }
     }
-    
     prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
     nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
-    
     setupCalendar();
   }
   
@@ -246,13 +257,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const paymentOptions = modal.querySelector('#payment-options-section');
     const paymentSection = modal.querySelector('#payment-section');
     const transferDetails = modal.querySelector('#transfer-details');
+    const discountSection = modal.querySelector('#discount-section');
 
     // Reset
     clientInputs.style.display = 'block';
     confirmBtn.style.display = 'block';
     confirmBtn.disabled = false;
+    modal.querySelector('.booking-form').style.display = 'block';
     modal.querySelector('#modal-message').style.display = 'none';
     document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
+    discountSection.style.display = 'none';
     
     // Populate
     modal.querySelector('#modal-service-name').textContent = service.nombre;
@@ -276,19 +290,26 @@ document.addEventListener('DOMContentLoaded', () => {
       clientPhoneInput.value = purchase.telefono || '';
     } else {
       modal.querySelector('#modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-      paymentOptions.style.display = 'block';
       clientNameInput.value = '';
       clientEmailInput.value = '';
       clientPhoneInput.value = '';
       
-      const updatePaymentView = () => {
-        const method = modal.querySelector('input[name="payment-method"]:checked').value;
-        paymentSection.style.display = method === 'card' ? 'block' : 'none';
-        transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
-        confirmBtn.textContent = method === 'card' ? 'Continuar al Pago' : 'Confirmar Cita';
-      };
-      modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
-      updatePaymentView();
+      if (service.precio > 0) {
+        paymentOptions.style.display = 'block';
+        const updatePaymentView = () => {
+          const method = modal.querySelector('input[name="payment-method"]:checked').value;
+          paymentSection.style.display = method === 'card' ? 'block' : 'none';
+          transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
+          confirmBtn.textContent = method === 'card' ? 'Continuar al Pago' : 'Confirmar Cita';
+        };
+        modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
+        updatePaymentView();
+      } else {
+        paymentOptions.style.display = 'none';
+        paymentSection.style.display = 'none';
+        transferDetails.style.display = 'none';
+        confirmBtn.textContent = 'Confirmar Cita';
+      }
     }
     
     modal.style.display = 'flex';
@@ -302,6 +323,8 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (purchaseId) {
         await createBookingOnServer(serviceId, date, slotData, purchaseId);
+      } else if (service.precio === 0) {
+        await createBookingOnServer(serviceId, date, slotData, null, 'Cortesía');
       } else {
         const method = modal.querySelector('input[name="payment-method"]:checked').value;
         if (method === 'card') {
@@ -407,7 +430,9 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.querySelector('#modal-message').textContent = `Error al agendar: ${error.message}`;
       modal.querySelector('#modal-message').className = 'error';
       modal.querySelector('#modal-message').style.display = 'block';
+      confirmBtn.style.display = 'block';
       confirmBtn.disabled = false;
+      confirmBtn.textContent = "Intentar de Nuevo";
     }
   }
   
@@ -420,18 +445,18 @@ document.addEventListener('DOMContentLoaded', () => {
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     } else if (type === 'package') {
       card.className = 'category-card';
-      card.innerHTML = `<img src="http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+      card.innerHTML = `<img src="https://images.unsplash.com/photo-1540555233522-26a9926973a1?auto=format&fit=crop&q=80&w=1000" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     } else if (type === 'service') {
       card.className = 'service-card';
       card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
     } else if (type === 'package-item') {
       card.className = 'package-card';
-      card.innerHTML = `<h4>${data.nombre}</h4><p>$${data.precio.toLocaleString('es-MX')} MXN</p>`;
+      card.innerHTML = `<h4>${data.nombre}</h4><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p>`;
     }
     return card;
   }
 
-  function getCategoryImage(categoryName) {
+    function getCategoryImage(categoryName) {
     const images = {
      'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
       'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
@@ -440,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
   }
-  
+
   function formatTime12h(time24h) {
     if (!time24h) return '';
     const [h, m] = time24h.split(':');
@@ -543,10 +568,17 @@ document.addEventListener('DOMContentLoaded', () => {
         serviceList.innerHTML = '<p>Ya has agendado todas las sesiones de este paquete.</p>';
         return;
       }
-      remainingServiceIds.forEach(serviceId => {
+      const uniqueServiceIds = [...new Set(remainingServiceIds)];
+      uniqueServiceIds.forEach(serviceId => {
         const service = allData.services.find(s => s.id === serviceId);
         if (service) {
+          const count = remainingServiceIds.filter(id => id === serviceId).length;
           const serviceCard = createCard('service', service);
+          const countEl = document.createElement('p');
+          countEl.textContent = `(Restantes: ${count})`;
+          countEl.style.fontWeight = 'bold';
+          serviceCard.querySelector('div').appendChild(countEl);
+          
           serviceCard.addEventListener('click', (e) => {
               e.preventDefault();
               navigateTo(`?service=${service.id}&purchaseId=${purchaseId}`);
@@ -592,47 +624,98 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function openPurchaseModal(pkg) {
+  async function openPurchaseModal(pkg) {
     const modal = document.getElementById('booking-modal');
-    document.getElementById('modal-title').textContent = 'Confirmar Compra de Paquete';
-    document.querySelector('#booking-modal .booking-summary').innerHTML = `<p><strong>Paquete:</strong> <span id="modal-service-name">${pkg.nombre}</span></p><p><strong>Precio:</strong> <span id="modal-price">$${pkg.precio.toLocaleString('es-MX')} MXN</span></p>`;
-    document.querySelector('#booking-modal .booking-form').style.display = 'block';
+    // Resetear el modal a un estado de compra
+    modal.querySelector('#modal-title').textContent = 'Confirmar Compra de Paquete';
+    modal.querySelector('.booking-summary').innerHTML = `<p><strong>Paquete:</strong> <span id="modal-service-name">${pkg.nombre}</span></p><p><strong>Precio:</strong> <span id="modal-price">$${pkg.precio.toLocaleString('es-MX')} MXN</span></p>`;
+    const form = modal.querySelector('.booking-form');
+    form.style.display = 'block';
+    form.querySelector('.client-inputs').style.display = 'block';
+    form.querySelector('#payment-options-section').style.display = 'none';
+    form.querySelector('#payment-section').style.display = 'none';
+    form.querySelector('#transfer-details').style.display = 'none';
+    const discountSection = form.querySelector('#discount-section');
+    discountSection.style.display = 'block';
+
     const modalMessage = document.getElementById('modal-message');
     modalMessage.style.display = 'none';
+    document.getElementById('discount-message').textContent = '';
+    document.getElementById('discount-code').value = '';
+
     const confirmBtn = document.getElementById('confirm-booking-btn');
     confirmBtn.disabled = false;
     confirmBtn.textContent = 'Confirmar Compra';
+    
     modal.style.display = 'flex';
     document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+    
+    // Lógica del descuento
+    const applyDiscountBtn = document.getElementById('apply-discount-btn');
+    let currentDiscount = null;
+    applyDiscountBtn.onclick = async () => {
+      const code = document.getElementById('discount-code').value.toUpperCase();
+      const messageEl = document.getElementById('discount-message');
+      if (!code) return;
+      
+      const res = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&packageId=${pkg.id}`);
+      const result = await res.json();
+      
+      if(result.status === 'success') {
+        currentDiscount = result.discount;
+        messageEl.className = 'success';
+        messageEl.textContent = `¡Descuento aplicado! Nuevo total: $${result.newPrice.toLocaleString('es-MX')} MXN`;
+        modal.querySelector('#modal-price').innerHTML = `$${result.newPrice.toLocaleString('es-MX')} MXN <span class="price-original">$${pkg.precio.toLocaleString('es-MX')} MXN</span>`;
+      } else {
+        currentDiscount = null;
+        messageEl.className = 'error';
+        messageEl.textContent = result.message;
+        modal.querySelector('#modal-price').textContent = `$${pkg.precio.toLocaleString('es-MX')} MXN`;
+      }
+    };
+    
     confirmBtn.onclick = async () => {
         const clientName = document.getElementById('clientName').value;
         const clientEmail = document.getElementById('clientEmail').value;
         const clientPhone = document.getElementById('clientPhone').value;
-        if (!clientName || !clientEmail || !clientPhone) {
+        if (!clientName || !clientEmail) {
             alert('Por favor, completa todos los campos.');
             return;
         }
         confirmBtn.textContent = 'Procesando...';
         confirmBtn.disabled = true;
-        const purchaseData = { action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone };
+        
+        const purchaseData = { 
+          action: 'purchasePackage', 
+          packageId: pkg.id, 
+          clientName, clientEmail, clientPhone,
+          discountCode: currentDiscount ? currentDiscount.Codigo : null
+        };
+        
         try {
             const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(purchaseData) });
             const result = await response.json();
             if (result.status === 'success') {
-                document.getElementById('modal-title').textContent = '¡Compra Exitosa!';
-                modalMessage.textContent = result.message;
+                modalMessage.textContent = "¡Gracias por tu compra! Serás redirigido para agendar tu primera sesión.";
                 modalMessage.className = 'success';
-                document.querySelector('#booking-modal .booking-form').style.display = 'none';
-            } else {
-                throw new Error(result.message);
-            }
+                modalMessage.style.display = 'block';
+                form.style.display = 'none';
+                
+                clientData = { email: clientEmail, packages: result.updatedPackages };
+                sessionStorage.setItem('amorVaelClientData', JSON.stringify(clientData));
+                setTimeout(() => {
+                  modal.style.display = 'none';
+                  navigateTo(`?view=book-package-session&purchaseId=${result.purchaseId}`);
+                }, 2500);
+
+            } else { throw new Error(result.message); }
         } catch (error) {
             modalMessage.textContent = error.message;
             modalMessage.className = 'error';
+            modalMessage.style.display = 'block';
             confirmBtn.textContent = 'Confirmar Compra';
             confirmBtn.disabled = false;
         }
-        modalMessage.style.display = 'block';
     };
   }
 
