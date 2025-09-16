@@ -1,3 +1,12 @@
-# netlify.toml - Configuración para Funciones
+# Archivo: netlify.toml
+
 [functions]
-  directory = "netlify/functions/"
+  # Esta es la carpeta donde Netlify buscará tus funciones.
+  directory = "netlify/functions"
+
+# Esta regla reescribe las llamadas a '/.netlify/functions/...' para que sean más limpias.
+# Es una buena práctica y asegura que tu endpoint `/.netlify/functions/engine` funcione.
+[[redirects]]
+  from = "/.netlify/functions/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
