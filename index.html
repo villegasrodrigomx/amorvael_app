@@ -4,18 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amor-Vael - Sistema de Citas</title>
-    
-    <style>
-      <?!= include('style.css'); ?>
-    </style>
-    
+    <link rel="stylesheet" href="style.css">
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
     <header class="main-header">
-        <a href="#" onclick="location.reload(); return false;" style="text-decoration: none;">
+        <a href="index.html" style="text-decoration: none;">
             <h1>AMOR-VAEL Beauty Spa, Nails & Lashes</h1>
         </a>
     </header>
@@ -23,62 +19,43 @@
     <main id="app-container" class="container">
         </main>
 
-    <template id="template-loading">
-        <div class="loading-spinner"></div>
-    </template>
-
-    <template id="template-categories-view">
-        <div class="view">
-            <h2>Nuestros Servicios</h2>
-            <div id="categories-grid" class="categories-grid"></div>
-        </div>
-    </template>
-
-    <template id="template-services-view">
-        <div class="view">
-            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
-            <h2 id="category-title"></h2>
-            <div id="services-grid" class="services-grid"></div>
-        </div>
-    </template>
-    
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3 id="modal-service-name"></h3>
-            <p id="modal-service-description"></p>
-            <p><strong>Duración:</strong> <span id="modal-service-duration"></span> min.</p>
-            <p><strong>Con:</strong> <span id="modal-specialist-name"></span></p>
+            <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
             <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
-            <div class="discount-section">
-                <input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input">
-                <button id="apply-service-discount-btn">Aplicar</button>
+            
+            <div id="service-booking-form">
+                <div class="discount-section">
+                    <input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input">
+                    <button id="apply-service-discount-btn">Aplicar</button>
+                </div>
+                <p id="service-discount-message"></p>
+                <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
+
+                <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
+                <div id="modal-message" style="display: none;"></div>
             </div>
-            <p id="service-discount-message"></p>
-            <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
-            <button id="confirm-booking-btn" class="cta-button">Continuar con la Reserva</button>
         </div>
     </div>
-    
+
     <div id="package-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <h3 id="modal-package-name"></h3>
-            <p>Este paquete incluye las siguientes sesiones:</p>
-            <ul id="modal-package-services"></ul>
-            <p><strong>Precio:</strong> $<span id="modal-package-price"></span> MXN</p>
             <div class="discount-section">
                 <input type="text" id="pkg-discount-code" placeholder="Código promocional" class="form-input">
                 <button id="apply-pkg-discount-btn">Aplicar</button>
             </div>
             <p id="pkg-discount-message"></p>
             <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
+            
             <button id="confirm-package-purchase-btn" class="cta-button">Confirmar Compra</button>
+            <div id="pkg-modal-message" style="display: none;"></div>
         </div>
     </div>
 
-    <script>
-      <?!= include('app.js'); ?>
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
