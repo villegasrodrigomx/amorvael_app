@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Amor-Vael - Sistema de Citas</title>
+    
     <?!= HtmlService.createHtmlOutputFromFile('style').getContent(); ?>
+    
     <script src="https://js.stripe.com/v3/"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -25,7 +27,7 @@
 
     <template id="template-categories-view">
         <div class="view">
-            <div id="client-area-entry">
+            <div id="client-area-entry" style="display: none;">
                 <a href="#?view=client-login" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a>
             </div>
             <h2>Nuestros Servicios</h2>
@@ -104,9 +106,10 @@
     </div>
     
     <script>
-      // Pasamos el URL del script de Apps Script al frontend
+      // Esta es la forma correcta de pasar la URL del script de Apps Script al JavaScript del lado del cliente.
       const SERVER_URL = "<?= ScriptApp.getService().getUrl() ?>";
     </script>
+    
     <?!= HtmlService.createHtmlOutputFromFile('app').getContent(); ?>
 </body>
 </html>
