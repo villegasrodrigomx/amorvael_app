@@ -19,14 +19,20 @@
     <main id="app-container" class="container">
         </main>
 
-    <template id="template-loading"><div class="loading-spinner"></div></template>
+    <template id="template-loading">
+        <div class="loading-spinner"></div>
+    </template>
+
     <template id="template-categories-view">
         <div class="view">
-            <div id="client-area-entry"><a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a></div>
+            <div id="client-area-entry">
+                <a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a>
+            </div>
             <h2>Nuestros Servicios</h2>
             <div id="categories-grid" class="categories-grid"></div>
         </div>
     </template>
+
     <template id="template-services-view">
          <div class="view">
             <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
@@ -34,6 +40,29 @@
             <div id="services-grid" class="services-grid"></div>
         </div>
     </template>
+
+    <template id="template-client-login">
+      <div class="view client-login-view">
+          <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver</a>
+          <h2>Acceso para Clientes</h2>
+          <p>Ingresa tu correo electrónico para ver los paquetes que has comprado.</p>
+          <form id="client-login-form">
+              <input type="email" id="client-login-email" class="form-input" placeholder="Tu correo electrónico" required>
+              <button type="submit" class="cta-button">Buscar mis paquetes</button>
+          </form>
+          <div id="client-login-message"></div>
+      </div>
+    </template>
+
+    <template id="template-my-packages">
+        <div class="view my-packages-view">
+            <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver</a>
+            <h2>Mis Paquetes</h2>
+            <p>Hola, aquí están los paquetes que has comprado con <strong id="client-email-display"></strong>.</p>
+            <div id="client-packages-list"></div>
+        </div>
+    </template>
+
     <div id="package-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -43,13 +72,13 @@
             <p><strong>Precio:</strong> $<span id="modal-package-price"></span> MXN</p>
             <div id="package-purchase-form">
                 <div class="client-details">
-                    <input type="text" id="pkg-client-name" placeholder="Nombre completo" class="form-input">
-                    <input type="email" id="pkg-client-email" placeholder="Correo electrónico" class="form-input">
-                    <input type="tel" id="pkg-client-phone" placeholder="Teléfono" class="form-input">
+                    <input type="text" id="pkg-client-name" placeholder="Nombre completo" required class="form-input">
+                    <input type="email" id="pkg-client-email" placeholder="Correo electrónico" required class="form-input">
+                    <input type="tel" id="pkg-client-phone" placeholder="Teléfono" required class="form-input">
                 </div>
                 <div class="discount-section">
                     <input type="text" id="pkg-discount-code" placeholder="Código promocional" class="form-input">
-                    <button id="apply-pkg-discount-btn">Aplicar</button>
+                    <button type="button" id="apply-pkg-discount-btn">Aplicar</button>
                 </div>
                 <p id="pkg-discount-message"></p>
                 <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
@@ -66,7 +95,8 @@
                 <h3 id="modal-service-name"></h3>
                 <p id="modal-service-description"></p>
                 <p><strong>Duración:</strong> <span id="modal-service-duration"></span> min.</p>
-                <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p> <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
+                <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
+                <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
             </div>
             <div id="booking-form-container">
                 <input type="date" id="booking-date" class="form-input">
@@ -78,10 +108,27 @@
                 </div>
                 <div class="discount-section">
                     <input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input">
-                    <button id="apply-service-discount-btn">Aplicar</button>
+                    <button type="button" id="apply-service-discount-btn">Aplicar</button>
                 </div>
                 <p id="service-discount-message"></p>
                 <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
+                <div id="payment-options-container">
+                    <label>¿Cómo te gustaría pagar?</label>
+                    <div class="payment-options">
+                        <label><input type="radio" name="payment-method" value="card" checked> Pagar ahora con tarjeta</label>
+                        <label><input type="radio" name="payment-method" value="transfer"> Pagar por transferencia</label>
+                    </div>
+                </div>
+                <div id="transfer-details" style="display: none;">
+                   <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
+                    <p><strong>Banco:</strong> NU México<br>
+                       <strong>CLABE:</strong> 638180010101648038<br>
+                       <strong>Titular:</strong> Ana Paula Ortiz Morales</p>
+                 </div>
+                <div id="payment-section" style="display: none;">
+                    <label>Datos de la tarjeta:</label>
+                    <div id="payment-element" class="StripeElement"></div>
+                </div>
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
                 <div id="modal-message" style="display: none;"></div>
             </div>
