@@ -5,11 +5,37 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // IMPORTANTE: Asegúrate de que esto apunte a tu backend.
   // Puede ser tu URL de función de Netlify o directamente la URL de la Web App de Google.
-  const API_ENDPOINT = 'URL_DE_TU_BACKEND_EN_GOOGLE_APPS_SCRIPT'; 
+  const API_ENDPOINT = '/.netlify/functions/engine'; 
 
   // --- Router (Se mantiene tu lógica original) ---
   function router() {
-      // ... (tu código de router original aquí) ...
+    // Recargamos clientData en cada navegación para asegurar que esté actualizado
+    clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+    
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    const category = params.get('category');
+    const serviceId = params.get('service');
+    const packageId = params.get('package');
+    const purchaseId = params.get('purchaseId');
+
+    if (view === 'client-login') {
+      renderClientLoginView();
+    } else if (view === 'my-packages') {
+      renderClientPackagesView();
+    } else if (view === 'book-package-session') {
+      renderPackageServicesView(purchaseId);
+    } else if (packageId) {
+      renderPackageDetailView(packageId);
+    } else if (serviceId) {
+      renderServiceDetailView(serviceId, purchaseId);
+    } else if (category) {
+      renderServicesView(category);
+    } else if (view === 'packages') {
+      renderPackagesView();
+    } else {
+      renderCategoriesView();
+    }
   }
 
   // --- Renderizado de Vistas (Modificaciones clave) ---
@@ -19,7 +45,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('booking-modal');
       
       // ... (poblar nombre, precio, etc., como en tu código original) ...
-      
       // CORRECCIÓN: Mostrar el nombre de la especialista
       const specialistsText = service.specialistsData.map(sp => sp.nombre).join(' / ');
       document.getElementById('modal-specialist-name').textContent = specialistsText || 'Por asignar';
@@ -99,3 +124,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
