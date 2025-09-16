@@ -3,37 +3,58 @@ document.addEventListener('DOMContentLoaded', () => {
   let allData = null;
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
   let currentDiscount = null;
+  
+  // --- CONFIGURACIÓN ---
   const API_ENDPOINT = '/.netlify/functions/engine';
   const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
+  // --- ROUTER Y FUNCIONES DE RENDERIZADO ---
   function router() {
-      // Tu router original aquí
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('packageId')) renderPackageDetailView(params.get('packageId'));
-      else if (params.get('service')) renderServiceDetailView(params.get('service'));
-      else if (params.get('category')) renderServicesView(params.get('category'));
-      else if (!allData) loadInitialData();
-      else renderCategoriesView();
+    clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    const category = params.get('category');
+    const serviceId = params.get('service');
+    const packageId = params.get('packageId');
+    const purchaseId = params.get('purchaseId');
+
+    // Cerrar modales al navegar
+    const openModal = document.querySelector('.modal[style*="display: block"]');
+    if (openModal && !serviceId && !packageId) {
+        openModal.style.display = 'none';
+    }
+    
+    if (view === 'client-login') renderClientLoginView();
+    else if (view === 'my-packages') renderClientPackagesView();
+    else if (view === 'book-package-session') renderPackageServicesView(purchaseId);
+    else if (packageId) renderPackageDetailView(packageId);
+    else if (serviceId) renderServiceDetailView(serviceId);
+    else if (category) renderServicesView(category);
+    else if (!allData) loadInitialData();
+    else renderCategoriesView();
   }
 
   function navigateTo(path) {
-      window.history.pushState({}, '', path);
-      router();
+    window.history.pushState({}, '', path);
+    router();
   }
 
   async function loadInitialData() {
-      renderLoading();
-      try {
-          const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
-          const result = await response.json();
-          if (result.status === 'success') {
-              allData = result.data;
-              router();
-          } else { throw new Error(result.message); }
-      } catch (error) { renderError(error.message); }
+    renderLoading();
+    try {
+      const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
+      const result = await response.json();
+      if (result.status === 'success') {
+        allData = result.data;
+        router();
+      } else {
+        throw new Error(result.message || 'No se pudieron cargar los datos.');
+      }
+    } catch (error) {
+      renderError(error.message);
+    }
   }
 
-  // --- RENDERIZADO DE VISTAS ---
   function renderLoading() { appContainer.innerHTML = document.getElementById('template-loading').innerHTML; }
   function renderError(message) { appContainer.innerHTML = `<div class="error-message">Error: ${message}</div>`; }
   
@@ -42,11 +63,24 @@ document.addEventListener('DOMContentLoaded', () => {
       appContainer.innerHTML = template;
       const grid = document.getElementById('categories-grid');
       const categories = [...new Set(allData.allServices.map(s => s.categoria))];
-      if (allData.allPackages.length > 0) categories.push('Paquetes Especiales');
+      if (allData.allPackages.length > 0) {
+        const packageCategories = [...new Set(allData.allPackages.map(p => p.categoria))].filter(Boolean);
+        packageCategories.forEach(pc => {
+          if (!categories.includes(pc)) categories.push(pc);
+        });
+        categories.push('Paquetes Especiales');
+      }
       grid.innerHTML = categories.map(category => {
-          const item = category === 'Paquetes Especiales' ? { imagen: 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg' } : allData.allServices.find(s => s.categoria === category);
-          return `<div class="category-card" onclick="navigateTo('?category=${encodeURIComponent(category)}')"><img src="${item.imagen}" alt="${category}"><h3>${category}</h3></div>`;
+          let itemImage;
+          if (category === 'Paquetes Especiales') {
+            itemImage = 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg';
+          } else {
+            const item = allData.allServices.find(s => s.categoria === category) || allData.allPackages.find(p => p.categoria === category);
+            itemImage = item.imagen;
+          }
+          return `<div class="category-card" onclick="navigateTo('?category=${encodeURIComponent(category)}')"><img src="${itemImage}" alt="${category}"><h3>${category}</h3></div>`;
       }).join('');
+      document.querySelector('.client-area-link').onclick = (e) => { e.preventDefault(); navigateTo('?view=client-login'); };
   }
   
   function renderServicesView(category) {
@@ -54,10 +88,12 @@ document.addEventListener('DOMContentLoaded', () => {
       appContainer.innerHTML = template;
       document.getElementById('category-title').textContent = category;
       const grid = document.getElementById('services-grid');
-      const items = category === 'Paquetes Especiales' ? allData.allPackages : allData.allServices.filter(s => s.categoria === category);
+      const items = category === 'Paquetes Especiales' 
+          ? allData.allPackages 
+          : [...allData.allServices, ...allData.allPackages].filter(item => item.categoria === category);
       grid.innerHTML = items.map(item => {
           const isPackage = !!item.servicios_ids;
-          return `<div class="service-card" onclick="navigateTo('?${isPackage ? 'packageId' : 'service'}=${item.id}')"><img src="${item.imagen || 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg'}" alt="${item.nombre}"><h4>${item.nombre}</h4><p>$${item.precio.toLocaleString('es-MX')} MXN</p></div>`;
+          return `<div class="service-card" onclick="navigateTo('?${isPackage ? 'packageId' : 'service'}=${item.id}')"><img src="${item.imagen}" alt="${item.nombre}"><h4>${item.nombre}</h4><p>$${item.precio.toLocaleString('es-MX')} MXN</p></div>`;
       }).join('');
   }
 
@@ -68,12 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('modal-package-name').textContent = pkg.nombre;
       document.getElementById('modal-package-price').textContent = pkg.precio.toLocaleString('es-MX');
       document.getElementById('pkg-final-price').textContent = pkg.precio.toLocaleString('es-MX');
-      document.getElementById('modal-package-services').innerHTML = pkg.servicios_ids.map(sId => `<li>${allData.allServices.find(s=>s.id===sId).nombre}</li>`).join('');
+      document.getElementById('modal-package-services').innerHTML = pkg.servicios_ids.map(sId => `<li>${allData.allServices.find(s=>s.id===sId)?.nombre || 'Servicio'}</li>`).join('');
       document.getElementById('pkg-discount-code').value = '';
       document.getElementById('pkg-discount-message').textContent = '';
       document.getElementById('apply-pkg-discount-btn').onclick = () => applyDiscount(pkg.id, pkg.precio, 'pkg');
       modal.style.display = 'block';
-      modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo('index.html'); };
+      modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.search.replace(/&?packageId=[^&]+/, '')); };
+      
+      handlePackagePurchase(pkg);
   }
 
   function renderServiceDetailView(serviceId) {
@@ -90,15 +128,18 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('service-discount-code').value = '';
       document.getElementById('service-discount-message').textContent = '';
       document.getElementById('apply-service-discount-btn').onclick = () => applyDiscount(service.id, service.precio, 'service');
+      
       modal.style.display = 'block';
-      modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo('index.html'); };
-
-      // Lógica original para buscar y mostrar horarios
+      modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.search.replace(/&?service=[^&]+/, '')); };
+      
+      // Lógica de disponibilidad
       const dateInput = document.getElementById('booking-date');
       dateInput.onchange = async () => {
           const date = dateInput.value;
           const slotsContainer = document.getElementById('available-slots-container');
           slotsContainer.innerHTML = 'Buscando horarios...';
+          document.querySelectorAll('.slot-button').forEach(b => b.classList.remove('selected'));
+          
           try {
               const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`);
               const result = await response.json();
@@ -111,6 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
               slotsContainer.innerHTML = 'Error al buscar horarios.';
           }
       };
+
+      document.getElementById('available-slots-container').addEventListener('click', e => {
+          if (e.target.classList.contains('slot-button')) {
+              document.querySelectorAll('.slot-button').forEach(b => b.classList.remove('selected'));
+              e.target.classList.add('selected');
+          }
+      });
   }
   
   async function applyDiscount(itemId, originalPrice, typePrefix) {
@@ -140,6 +188,55 @@ document.addEventListener('DOMContentLoaded', () => {
       return originalPrice;
   }
   
+  function handlePackagePurchase(pkg) {
+      const modal = document.getElementById('package-modal');
+      const confirmBtn = document.getElementById('confirm-package-purchase-btn');
+      const form = document.getElementById('package-purchase-form');
+      const modalMessage = document.getElementById('pkg-modal-message');
+
+      confirmBtn.onclick = async () => {
+          const clientName = document.getElementById('pkg-client-name').value;
+          const clientEmail = document.getElementById('pkg-client-email').value;
+          const clientPhone = document.getElementById('pkg-client-phone').value;
+          if (!clientName || !clientEmail || !clientPhone) {
+              alert('Por favor, completa todos tus datos.');
+              return;
+          }
+          confirmBtn.disabled = true;
+          confirmBtn.textContent = 'Procesando...';
+          
+          const purchaseData = {
+              action: 'purchasePackage',
+              packageId: pkg.id, 
+              clientName, clientEmail, clientPhone,
+              discountCode: currentDiscount ? currentDiscount.Codigo : null
+          };
+          
+          try {
+              const response = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(purchaseData) });
+              const result = await response.json();
+              if (result.status === 'success') {
+                  modalMessage.textContent = "¡Gracias por tu compra! Serás redirigido para agendar tu primera sesión.";
+                  modalMessage.className = 'success';
+                  modalMessage.style.display = 'block';
+                  form.style.display = 'none';
+                  clientData = { email: clientEmail, packages: result.updatedPackages };
+                  sessionStorage.setItem('amorVaelClientData', JSON.stringify(clientData));
+                  setTimeout(() => {
+                    modal.style.display = 'none';
+                    navigateTo(`?view=book-package-session&purchaseId=${result.purchaseId}`);
+                  }, 2500);
+              } else { throw new Error(result.message); }
+          } catch (error) {
+              modalMessage.textContent = error.message;
+              modalMessage.className = 'error';
+              modalMessage.style.display = 'block';
+              confirmBtn.textContent = 'Confirmar Compra';
+              confirmBtn.disabled = false;
+          }
+      };
+    }
+
   router();
   window.addEventListener('popstate', router);
 });
