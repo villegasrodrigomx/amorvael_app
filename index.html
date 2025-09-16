@@ -19,14 +19,76 @@
     <main id="app-container" class="container">
         </main>
 
+    <template id="template-loading">
+        <div class="loading-spinner"></div>
+    </template>
+
+    <template id="template-categories-view">
+        <div class="view">
+            <div id="client-area-entry">
+                <a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a>
+            </div>
+            <h2>Nuestros Servicios</h2>
+            <div id="categories-grid" class="categories-grid"></div>
+        </div>
+    </template>
+
+    <template id="template-services-view">
+         <div class="view">
+            <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
+            <h2 id="category-title"></h2>
+            <div id="services-grid" class="services-grid"></div>
+        </div>
+    </template>
+
+    <div id="package-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-package-name"></h3>
+            <p>Este paquete incluye las siguientes sesiones:</p>
+            <ul id="modal-package-services"></ul>
+            <p><strong>Precio:</strong> $<span id="modal-package-price"></span> MXN</p>
+            
+            <div id="package-purchase-form">
+                <div class="client-details">
+                    <input type="text" id="pkg-client-name" placeholder="Nombre completo" class="form-input">
+                    <input type="email" id="pkg-client-email" placeholder="Correo electrónico" class="form-input">
+                    <input type="tel" id="pkg-client-phone" placeholder="Teléfono" class="form-input">
+                </div>
+                
+                <div class="discount-section">
+                    <input type="text" id="pkg-discount-code" placeholder="Código promocional" class="form-input">
+                    <button id="apply-pkg-discount-btn">Aplicar</button>
+                </div>
+                <p id="pkg-discount-message"></p>
+                <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
+                
+                <button id="confirm-package-purchase-btn" class="cta-button">Confirmar Compra</button>
+                <div id="pkg-modal-message" class="modal-feedback"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
-            <h3 id="modal-service-name"></h3>
-            <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
-            <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
+            <div id="booking-modal-content">
+                <h3 id="modal-service-name"></h3>
+                <p id="modal-service-description"></p>
+                <p><strong>Duración:</strong> <span id="modal-service-duration"></span> min.</p>
+                <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
+                <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
+            </div>
             
-            <div id="service-booking-form">
+            <div id="booking-form-container">
+                <input type="date" id="booking-date" class="form-input">
+                <div id="available-slots-container"></div>
+                <div class="client-details">
+                    <input type="text" id="client-name" placeholder="Nombre completo" class="form-input">
+                    <input type="email" id="client-email" placeholder="Correo electrónico" class="form-input">
+                    <input type="tel" id="client-phone" placeholder="Teléfono" class="form-input">
+                </div>
+
                 <div class="discount-section">
                     <input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input">
                     <button id="apply-service-discount-btn">Aplicar</button>
@@ -34,25 +96,13 @@
                 <p id="service-discount-message"></p>
                 <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
 
+                <div id="payment-section" style="display: none;">
+                    <label>Datos de la tarjeta:</label>
+                    <div id="payment-element" class="StripeElement"></div>
+                </div>
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
                 <div id="modal-message" style="display: none;"></div>
             </div>
-        </div>
-    </div>
-
-    <div id="package-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3 id="modal-package-name"></h3>
-            <div class="discount-section">
-                <input type="text" id="pkg-discount-code" placeholder="Código promocional" class="form-input">
-                <button id="apply-pkg-discount-btn">Aplicar</button>
-            </div>
-            <p id="pkg-discount-message"></p>
-            <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
-            
-            <button id="confirm-package-purchase-btn" class="cta-button">Confirmar Compra</button>
-            <div id="pkg-modal-message" style="display: none;"></div>
         </div>
     </div>
 
