@@ -1,9 +1,8 @@
 /**
- * Motor de Citas Amor-Vael v22.1 - VERSIÓN FINAL ESTABLE
- * - CORREGIDO: La lógica para mostrar las imágenes de las categorías ahora lee correctamente
- * los datos de los servicios/paquetes, restaurando la funcionalidad original.
- * - CORREGIDO: El filtro de servicios por categoría ahora es insensible a mayúsculas/minúsculas,
- * solucionando el problema de categorías que aparecían vacías.
+ * Motor de Citas Amor-Vael v23.0 - VERSIÓN FINAL Y ESTABLE
+ * - RESTAURADO: Se re-implementa la lógica original del cliente con las funciones
+ * `getCategoryImage` y `createCard` para garantizar la correcta visualización de
+ * categorías e imágenes, incluyendo el caso especial de "Paquetes Especiales".
  * - MANTIENE: Toda la lógica de negocio, delegación de eventos, pagos y descuentos.
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,14 +14,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function router() {
     const params = new URLSearchParams(window.location.search);
-    const view = params.get('view');
     const category = params.get('category');
     const serviceId = params.get('service');
     const packageId = params.get('packageId');
-
-    const openModal = document.querySelector('.modal[style*="display: block"]');
-    if (openModal && !serviceId && !packageId) openModal.style.display = 'none';
     
+    // Ocultar modales al navegar si no se está abriendo uno nuevo
+    const openModal = document.querySelector('.modal[style*="display: block"]');
+    if (openModal && !serviceId && !packageId) {
+      openModal.style.display = 'none';
+    }
+
     if (packageId) renderDetailView(packageId, true);
     else if (serviceId) renderDetailView(serviceId, false);
     else if (category) renderServicesView(decodeURIComponent(category));
@@ -54,24 +55,34 @@ document.addEventListener('DOMContentLoaded', () => {
       const template = document.getElementById('template-categories-view').innerHTML;
       appContainer.innerHTML = template;
       const grid = document.getElementById('categories-grid');
+      
+      // Limpiar el grid antes de añadir nuevas tarjetas
+      grid.innerHTML = ''; 
+
       let categories = [];
-      if(allData && allData.allServices) categories = [...new Set(allData.allServices.map(s => s.categoria))];
-      if (allData && allData.allPackages && allData.allPackages.length > 0) {
-        const packageCategories = [...new Set(allData.allPackages.map(p => p.categoria))].filter(Boolean);
-        packageCategories.forEach(pc => { if (!categories.includes(pc)) categories.push(pc); });
-        categories.push('Paquetes Especiales');
+      if (allData && allData.allServices) {
+          categories = [...new Set(allData.allServices.map(s => s.categoria))];
       }
-      grid.innerHTML = categories.map(category => {
-          // Lógica de imagen corregida: Busca una imagen representativa en los datos reales.
-          let representativeItem;
-          if (category === 'Paquetes Especiales') {
-              representativeItem = allData.allPackages.find(p => p.imagen) || { imagen: 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg' };
-          } else {
-              representativeItem = allData.allServices.find(s => s.categoria === category && s.imagen) || allData.allPackages.find(p => p.categoria === category && p.imagen);
-          }
-          const itemImage = representativeItem ? representativeItem.imagen : 'https://via.placeholder.com/300x200.png?text=Amor-Vael';
-          return `<div class="category-card" data-category="${encodeURIComponent(category)}"><img src="${itemImage}" alt="${category}"><h3>${category}</h3></div>`;
-      }).join('');
+
+      // Añadir categorías de paquetes si existen y no están ya incluidas
+      if (allData && allData.allPackages) {
+          const packageCategories = [...new Set(allData.allPackages.map(p => p.categoria))].filter(Boolean);
+          packageCategories.forEach(pc => {
+              if (!categories.includes(pc)) categories.push(pc);
+          });
+      }
+      
+      // Renderizar tarjetas de categorías
+      categories.forEach(categoryName => {
+          const card = createCard('category', { name: categoryName });
+          grid.appendChild(card);
+      });
+
+      // Añadir la tarjeta de "Paquetes Especiales" por separado
+      if (allData && allData.allPackages && allData.allPackages.length > 0) {
+          const packageCard = createCard('package', {}); // No necesita datos adicionales
+          grid.appendChild(packageCard);
+      }
   }
   
   function renderServicesView(category) {
@@ -79,18 +90,23 @@ document.addEventListener('DOMContentLoaded', () => {
       appContainer.innerHTML = template;
       document.getElementById('category-title').textContent = category;
       const grid = document.getElementById('services-grid');
+      grid.innerHTML = ''; // Limpiar
+
       let items;
       if (category === 'Paquetes Especiales') {
           items = allData.allPackages;
+          items.forEach(pkg => {
+              const card = createCard('package-item', pkg);
+              grid.appendChild(card);
+          });
       } else {
-          // Filtro corregido: insensible a mayúsculas/minúsculas y espacios.
           items = [...(allData.allServices || []), ...(allData.allPackages || [])]
               .filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
+          items.forEach(service => {
+              const card = createCard('service', service);
+              grid.appendChild(card);
+          });
       }
-      grid.innerHTML = items.map(item => {
-          const isPackage = !!item.servicios_ids;
-          return `<div class="service-card" data-type="${isPackage ? 'packageId' : 'service'}" data-id="${item.id}"><img src="${item.imagen}" alt="${item.nombre}"><h4>${item.nombre}</h4><p>$${item.precio.toLocaleString('es-MX')} MXN</p></div>`;
-      }).join('');
   }
   
   function renderDetailView(itemId, isPackage) {
@@ -142,34 +158,68 @@ document.addEventListener('DOMContentLoaded', () => {
       modal.style.display = 'block';
   }
 
-  async function getAndRenderSlots(serviceId, date) {
-    const slotsContainer = document.getElementById('available-slots-container');
-    slotsContainer.innerHTML = 'Buscando horarios...';
-    try {
-      const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`);
-      const result = await response.json();
-      if (result.status === 'success' && result.availableSlots.length > 0) {
-        slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button" data-slot="${slot}">${slot}</button>`).join('');
-      } else {
-        slotsContainer.innerHTML = 'No hay horarios disponibles para esta fecha.';
-      }
-    } catch (error) {
-      slotsContainer.innerHTML = 'Error al buscar horarios.';
-    }
+  async function getAndRenderSlots(serviceId, date) { /* ... Lógica de slots sin cambios ... */ const slotsContainer = document.getElementById('available-slots-container'); slotsContainer.innerHTML = 'Buscando horarios...'; try { const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`); const result = await response.json(); if (result.status === 'success' && result.availableSlots.length > 0) { slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button" data-slot="${slot}">${slot}</button>`).join(''); } else { slotsContainer.innerHTML = 'No hay horarios disponibles para esta fecha.'; } } catch (error) { slotsContainer.innerHTML = 'Error al buscar horarios.'; } }
+  async function applyDiscount(itemId, originalPrice, typePrefix) { /* ... Lógica de descuentos sin cambios ... */ const code = document.getElementById(`${typePrefix}-discount-code`).value; const messageEl = document.getElementById(`${typePrefix}-discount-message`); const finalPriceEl = document.getElementById(`${typePrefix}-final-price`); if (!code) { messageEl.textContent = 'Ingresa un código.'; messageEl.className = 'error'; return; } messageEl.textContent = 'Validando...'; try { const response = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&itemId=${itemId}`); const result = await response.json(); if (result.status !== 'success') throw new Error(result.message); const newPrice = calculateDiscountedPrice(originalPrice, result.discount); finalPriceEl.textContent = newPrice.toLocaleString('es-MX'); messageEl.textContent = '¡Descuento aplicado!'; messageEl.className = 'success'; } catch (error) { finalPriceEl.textContent = originalPrice.toLocaleString('es-MX'); messageEl.textContent = error.message; messageEl.className = 'error'; } }
+  function calculateDiscountedPrice(originalPrice, discount) { /* ... Lógica de descuentos sin cambios ... */ const value = parseFloat(discount.Valor); if (discount.Tipo === '%') return originalPrice * (1 - value / 100); if (discount.Tipo === 'MXN') return Math.max(0, originalPrice - value); return originalPrice; }
+  
+  // =================================================================
+  // FUNCIONES ORIGINALES RESTAURADAS
+  // =================================================================
+  
+  function getCategoryImage(categoryName) {
+    const images = {
+      'UÑAS': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
+      'PESTAÑAS': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
+      'MASAJES': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
+      'FACIALES': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'
+    };
+    return images[categoryName.toUpperCase()] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
   }
 
-  async function applyDiscount(itemId, originalPrice, typePrefix) {
-      const code = document.getElementById(`${typePrefix}-discount-code`).value; const messageEl = document.getElementById(`${typePrefix}-discount-message`); const finalPriceEl = document.getElementById(`${typePrefix}-final-price`); if (!code) { messageEl.textContent = 'Ingresa un código.'; messageEl.className = 'error'; return; } messageEl.textContent = 'Validando...'; try { const response = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&itemId=${itemId}`); const result = await response.json(); if (result.status !== 'success') throw new Error(result.message); const newPrice = calculateDiscountedPrice(originalPrice, result.discount); finalPriceEl.textContent = newPrice.toLocaleString('es-MX'); messageEl.textContent = '¡Descuento aplicado!'; messageEl.className = 'success'; } catch (error) { finalPriceEl.textContent = originalPrice.toLocaleString('es-MX'); messageEl.textContent = error.message; messageEl.className = 'error'; }
+  function createCard(type, data) {
+    const card = document.createElement('a');
+    card.href = '#';
+    if (type === 'category') {
+      card.className = 'category-card';
+      card.dataset.category = encodeURIComponent(data.name);
+      card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="Imagen de ${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
+    } else if (type === 'package') {
+      card.className = 'category-card';
+      card.dataset.category = 'Paquetes Especiales'; // Atributo para el click
+      const packageImageUrl = 'http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg';
+      card.innerHTML = `<img src="${packageImageUrl}" alt="Imagen de Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
+    } else if (type === 'service') {
+      card.className = 'service-card';
+      card.dataset.type = 'service';
+      card.dataset.id = data.id;
+      card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
+    } else if (type === 'package-item') {
+      card.className = 'package-card';
+      card.dataset.type = 'packageId';
+      card.dataset.id = data.id;
+      const serviceCount = data.servicios_ids.length;
+      const serviceText = serviceCount === 1 ? '1 servicio' : `${serviceCount} servicios`;
+      card.innerHTML = `<h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p>`;
+    }
+    return card;
   }
-  function calculateDiscountedPrice(originalPrice, discount) { const value = parseFloat(discount.Valor); if (discount.Tipo === '%') return originalPrice * (1 - value / 100); if (discount.Tipo === 'MXN') return Math.max(0, originalPrice - value); return originalPrice; }
   
+  // =================================================================
+  // DELEGACIÓN DE EVENTOS PRINCIPAL
+  // =================================================================
   document.body.addEventListener('click', e => {
     const categoryCard = e.target.closest('.category-card');
-    if (categoryCard) { e.preventDefault(); navigateTo(`?category=${categoryCard.dataset.category}`); return; }
-    
-    const serviceCard = e.target.closest('.service-card');
-    if (serviceCard) { e.preventDefault(); navigateTo(`?${serviceCard.dataset.type}=${serviceCard.dataset.id}`); return; }
-    
+    if (categoryCard) {
+      e.preventDefault();
+      navigateTo(`?category=${categoryCard.dataset.category}`);
+      return;
+    }
+    const serviceCard = e.target.closest('.service-card, .package-card');
+    if (serviceCard && serviceCard.dataset.id) { // Asegura que no sea una tarjeta de categoría
+      e.preventDefault();
+      navigateTo(`?${serviceCard.dataset.type}=${serviceCard.dataset.id}`);
+      return;
+    }
     const closeModalButton = e.target.closest('.close-button');
     if (closeModalButton) {
       e.preventDefault();
@@ -187,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- INICIALIZACIÓN ---
   router();
   window.addEventListener('popstate', router);
 });
