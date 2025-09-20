@@ -1,9 +1,10 @@
 /**
- * Motor de Citas Amor-Vael v22.0 - VERSIÓN DE PRODUCCIÓN ESTABLE
- * - ROBUSTEZ: Se implementa delegación de eventos para todos los clicks, garantizando
- * que la interfaz siempre responda, incluso en modo incógnito.
- * - RESTAURADO: Se vuelve a implementar la función `getCategoryImage`.
- * - MANTIENE: Lógica de negocio de pagos, descuentos y navegación.
+ * Motor de Citas Amor-Vael v22.1 - VERSIÓN FINAL ESTABLE
+ * - CORREGIDO: La lógica para mostrar las imágenes de las categorías ahora lee correctamente
+ * los datos de los servicios/paquetes, restaurando la funcionalidad original.
+ * - CORREGIDO: El filtro de servicios por categoría ahora es insensible a mayúsculas/minúsculas,
+ * solucionando el problema de categorías que aparecían vacías.
+ * - MANTIENE: Toda la lógica de negocio, delegación de eventos, pagos y descuentos.
  */
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
@@ -24,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (packageId) renderDetailView(packageId, true);
     else if (serviceId) renderDetailView(serviceId, false);
-    else if (category) renderServicesView(category);
+    else if (category) renderServicesView(decodeURIComponent(category));
     else if (!allData) loadInitialData();
     else renderCategoriesView();
   }
@@ -61,7 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
         categories.push('Paquetes Especiales');
       }
       grid.innerHTML = categories.map(category => {
-          const itemImage = getCategoryImage(category);
+          // Lógica de imagen corregida: Busca una imagen representativa en los datos reales.
+          let representativeItem;
+          if (category === 'Paquetes Especiales') {
+              representativeItem = allData.allPackages.find(p => p.imagen) || { imagen: 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg' };
+          } else {
+              representativeItem = allData.allServices.find(s => s.categoria === category && s.imagen) || allData.allPackages.find(p => p.categoria === category && p.imagen);
+          }
+          const itemImage = representativeItem ? representativeItem.imagen : 'https://via.placeholder.com/300x200.png?text=Amor-Vael';
           return `<div class="category-card" data-category="${encodeURIComponent(category)}"><img src="${itemImage}" alt="${category}"><h3>${category}</h3></div>`;
       }).join('');
   }
@@ -71,9 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
       appContainer.innerHTML = template;
       document.getElementById('category-title').textContent = category;
       const grid = document.getElementById('services-grid');
-      const items = category === 'Paquetes Especiales' 
-          ? allData.allPackages 
-          : [...(allData.allServices || []), ...(allData.allPackages || [])].filter(item => item.categoria === category);
+      let items;
+      if (category === 'Paquetes Especiales') {
+          items = allData.allPackages;
+      } else {
+          // Filtro corregido: insensible a mayúsculas/minúsculas y espacios.
+          items = [...(allData.allServices || []), ...(allData.allPackages || [])]
+              .filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
+      }
       grid.innerHTML = items.map(item => {
           const isPackage = !!item.servicios_ids;
           return `<div class="service-card" data-type="${isPackage ? 'packageId' : 'service'}" data-id="${item.id}"><img src="${item.imagen}" alt="${item.nombre}"><h4>${item.nombre}</h4><p>$${item.precio.toLocaleString('es-MX')} MXN</p></div>`;
@@ -103,11 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-specialist-name').textContent = specialistsText || 'Por asignar';
         
         const dateInput = document.getElementById('booking-date');
-        dateInput.value = ''; // Limpiar fecha
-        document.getElementById('available-slots-container').innerHTML = ''; // Limpiar slots
+        dateInput.value = '';
+        document.getElementById('available-slots-container').innerHTML = '';
         dateInput.onchange = () => getAndRenderSlots(item.id, dateInput.value);
         
-        // Lógica de pago
         const paymentOptions = document.querySelectorAll('input[name="payment-method"]');
         const transferDetails = document.getElementById('transfer-details');
         const paymentSection = document.getElementById('payment-section');
@@ -146,40 +158,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // --- LÓGICA DE DESCUENTOS Y OTRAS FUNCIONES ---
-  async function applyDiscount(itemId, originalPrice, typePrefix) { /* ... Tu lógica original aquí ... */ const code = document.getElementById(`${typePrefix}-discount-code`).value; const messageEl = document.getElementById(`${typePrefix}-discount-message`); const finalPriceEl = document.getElementById(`${typePrefix}-final-price`); if (!code) { messageEl.textContent = 'Ingresa un código.'; messageEl.className = 'error'; return; } messageEl.textContent = 'Validando...'; try { const response = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&itemId=${itemId}`); const result = await response.json(); if (result.status !== 'success') throw new Error(result.message); const newPrice = calculateDiscountedPrice(originalPrice, result.discount); finalPriceEl.textContent = newPrice.toLocaleString('es-MX'); messageEl.textContent = '¡Descuento aplicado!'; messageEl.className = 'success'; } catch (error) { finalPriceEl.textContent = originalPrice.toLocaleString('es-MX'); messageEl.textContent = error.message; messageEl.className = 'error'; } }
+  async function applyDiscount(itemId, originalPrice, typePrefix) {
+      const code = document.getElementById(`${typePrefix}-discount-code`).value; const messageEl = document.getElementById(`${typePrefix}-discount-message`); const finalPriceEl = document.getElementById(`${typePrefix}-final-price`); if (!code) { messageEl.textContent = 'Ingresa un código.'; messageEl.className = 'error'; return; } messageEl.textContent = 'Validando...'; try { const response = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&itemId=${itemId}`); const result = await response.json(); if (result.status !== 'success') throw new Error(result.message); const newPrice = calculateDiscountedPrice(originalPrice, result.discount); finalPriceEl.textContent = newPrice.toLocaleString('es-MX'); messageEl.textContent = '¡Descuento aplicado!'; messageEl.className = 'success'; } catch (error) { finalPriceEl.textContent = originalPrice.toLocaleString('es-MX'); messageEl.textContent = error.message; messageEl.className = 'error'; }
+  }
   function calculateDiscountedPrice(originalPrice, discount) { const value = parseFloat(discount.Valor); if (discount.Tipo === '%') return originalPrice * (1 - value / 100); if (discount.Tipo === 'MXN') return Math.max(0, originalPrice - value); return originalPrice; }
   
-  /**
-   * FUNCIÓN DE IMÁGENES DE CATEGORÍA RESTAURADA
-   */
-  function getCategoryImage(categoryName) {
-    const images = {
-      'FACIALES': 'http://amor-vael.com/wp-content/uploads/2021/08/cat-faciales.jpg',
-      'MASAJES': 'http://amor-vael.com/wp-content/uploads/2021/08/cat-masajes.jpg',
-      'UÑAS': 'http://amor-vael.com/wp-content/uploads/2021/08/cat-unas.jpg',
-      'PESTAÑAS': 'http://amor-vael.com/wp-content/uploads/2021/08/cat-pestañas.jpg',
-      'PAQUETES ESPECIALES': 'http://amor-vael.com/wp-content/uploads/2021/08/paquetes.jpg',
-    };
-    return images[categoryName.toUpperCase()] || 'https://via.placeholder.com/300x200.png?text=Amor-Vael';
-  }
-  
-  // =================================================================
-  // DELEGACIÓN DE EVENTOS PRINCIPAL (la forma robusta de manejar clicks)
-  // =================================================================
   document.body.addEventListener('click', e => {
     const categoryCard = e.target.closest('.category-card');
-    if (categoryCard) {
-      e.preventDefault();
-      navigateTo(`?category=${categoryCard.dataset.category}`);
-      return;
-    }
+    if (categoryCard) { e.preventDefault(); navigateTo(`?category=${categoryCard.dataset.category}`); return; }
+    
     const serviceCard = e.target.closest('.service-card');
-    if (serviceCard) {
-      e.preventDefault();
-      navigateTo(`?${serviceCard.dataset.type}=${serviceCard.dataset.id}`);
-      return;
-    }
+    if (serviceCard) { e.preventDefault(); navigateTo(`?${serviceCard.dataset.type}=${serviceCard.dataset.id}`); return; }
+    
     const closeModalButton = e.target.closest('.close-button');
     if (closeModalButton) {
       e.preventDefault();
@@ -197,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // --- INICIALIZACIÓN ---
   router();
   window.addEventListener('popstate', router);
 });
