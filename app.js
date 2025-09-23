@@ -1,22 +1,24 @@
-/**
- * Motor de Citas Amor-Vael v2.01 - VERSIÓN DE PRODUCCIÓN FINAL Y ESTABLE
- * - Basado 100% en el código original del cliente para garantizar la estabilidad.
- * - MEJORAS INTEGRADAS: Se inyecta la lógica para mostrar especialistas, habilitar compra de paquetes,
- * validar descuentos y manejar servicios de $0.00 de forma compatible.
- * - LÓGICA DE PAGO CORREGIDA: Se desactiva el pago con tarjeta.
- */
 document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
     let allData = null;
+    let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+    
     const API_ENDPOINT = '/.netlify/functions/engine';
+    const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
     function router() {
+        clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
         const params = new URLSearchParams(window.location.search);
+        const view = params.get('view');
         const category = params.get('category');
         const serviceId = params.get('service');
         const packageId = params.get('package');
+        const purchaseId = params.get('purchaseId');
 
-        if (packageId) renderPackageDetailView(packageId);
+        if (view === 'client-login') renderClientLoginView();
+        else if (view === 'my-packages') renderClientPackagesView();
+        else if (view === 'book-package-session') renderPackageServicesView(purchaseId);
+        else if (packageId) renderPackageDetailView(packageId);
         else if (serviceId) renderServiceDetailView(serviceId);
         else if (category) renderServicesView(decodeURIComponent(category));
         else if (!allData) loadInitialData();
@@ -64,8 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(packageCard);
         }
         
+        // Añadir versión
         const versionFooter = document.getElementById('version-footer');
         if(versionFooter) versionFooter.textContent = 'v.2.01';
+
+        document.querySelector('.client-area-link').onclick = (e) => { e.preventDefault(); navigateTo('?view=client-login'); };
     }
   
     function renderServicesView(category) {
@@ -79,8 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (category === 'Paquetes Especiales') {
             items = allData.allPackages;
         } else {
-            items = [...(allData.allServices || []), ...(allData.allPackages || [])]
-                .filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
+            items = allData.allServices.filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
         }
         
         items.forEach(item => {
@@ -95,107 +99,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const service = allData.allServices.find(s => s.id === serviceId);
         if (!service) return renderError('Servicio no encontrado.');
         const modal = document.getElementById('booking-modal');
-
-        // Poblar datos del modal
         document.getElementById('modal-service-name').textContent = service.nombre;
         document.getElementById('modal-service-description').textContent = service.descripcion;
         document.getElementById('modal-service-duration').textContent = service.duracion;
         document.getElementById('modal-service-price').textContent = service.precio.toLocaleString('es-MX');
-        document.getElementById('service-final-price').textContent = service.precio.toLocaleString('es-MX');
-        const specialistsText = service.specialistsData.map(sp => sp.nombre).join(' / ');
-        document.getElementById('modal-specialist-name').textContent = specialistsText || 'Por asignar';
-        
-        // Lógica de pago
-        const paymentContainer = document.getElementById('payment-options-container');
-        const discountContainer = modal.querySelector('.discount-section');
-        const finalPriceContainer = modal.querySelector('.final-price');
-
-        if (service.precio > 0) {
-            paymentContainer.style.display = 'block';
-            discountContainer.style.display = 'flex';
-            finalPriceContainer.style.display = 'block';
-            const paymentOptions = document.querySelectorAll('input[name="payment-method"]');
-            paymentOptions.forEach(radio => radio.addEventListener('change', handlePaymentChange));
-            document.querySelector('input[name="payment-method"][value="transfer"]').checked = true;
-            handlePaymentChange();
-        } else {
-            paymentContainer.style.display = 'none';
-            discountContainer.style.display = 'none';
-            finalPriceContainer.style.display = 'none';
-            document.getElementById('transfer-details').style.display = 'none';
-            document.getElementById('payment-section').style.display = 'none';
-        }
-
-        // Lógica de disponibilidad
-        const dateInput = document.getElementById('booking-date');
-        dateInput.value = '';
-        dateInput.onchange = () => getAndRenderSlots(serviceId, dateInput.value);
-        
         modal.style.display = 'block';
-        modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.search.replace(/&?service=[^&]+/, '')); };
+        modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.pathname); };
+        
+        const dateInput = document.getElementById('booking-date');
+        dateInput.onchange = async () => {
+            const date = dateInput.value;
+            const slotsContainer = document.getElementById('available-slots-container');
+            slotsContainer.innerHTML = '<div class="loading-spinner"></div>';
+            try {
+                const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`);
+                const result = await response.json();
+                if (result.status === 'success' && result.availableSlots.length > 0) {
+                    slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button">${slot}</button>`).join('');
+                } else {
+                    slotsContainer.innerHTML = '<p>No hay horarios disponibles para esta fecha.</p>';
+                }
+            } catch (error) {
+                slotsContainer.innerHTML = '<p class="error-message">Error al buscar horarios.</p>';
+            }
+        };
     }
 
     function renderPackageDetailView(packageId) {
         const pkg = allData.allPackages.find(p => p.id === packageId);
         if (!pkg) return renderError('Paquete no encontrado.');
         const modal = document.getElementById('package-modal');
-
-        document.getElementById('modal-package-name').textContent = pkg.nombre;
-        document.getElementById('modal-package-price').textContent = pkg.precio.toLocaleString('es-MX');
-        document.getElementById('pkg-final-price').textContent = pkg.precio.toLocaleString('es-MX');
-        document.getElementById('modal-package-services').innerHTML = pkg.servicios_ids.map(sId => `<li>${allData.allServices.find(s=>s.id===sId)?.nombre || 'Servicio'}</li>`).join('');
-
-        document.getElementById('pkg-discount-code').value = '';
-        document.getElementById('pkg-discount-message').textContent = '';
-        document.getElementById('apply-pkg-discount-btn').onclick = () => applyDiscount(pkg.id, pkg.precio, 'pkg');
-        
+        document.getElementById('modal-package-name').textContent = "Funcionalidad de compra para \"" + pkg.nombre + "\" en construcción.";
         modal.style.display = 'block';
-        modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.search.replace(/&?package=[^&]+/, '')); };
-    }
-
-    async function getAndRenderSlots(serviceId, date) {
-        const slotsContainer = document.getElementById('available-slots-container');
-        slotsContainer.innerHTML = '<div class="loading-spinner"></div>';
-        try {
-            const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`);
-            const result = await response.json();
-            if (result.status === 'success' && result.availableSlots.length > 0) {
-                slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button">${slot}</button>`).join('');
-            } else { slotsContainer.innerHTML = '<p>No hay horarios disponibles para esta fecha.</p>'; }
-        } catch (error) { slotsContainer.innerHTML = '<p class="error-message">Error al buscar horarios.</p>'; }
-    }
-
-    async function applyDiscount(itemId, originalPrice, typePrefix) {
-        const code = document.getElementById(`${typePrefix}-discount-code`).value;
-        const messageEl = document.getElementById(`${typePrefix}-discount-message`);
-        const finalPriceEl = document.getElementById(`${typePrefix}-final-price`);
-        if (!code) { messageEl.textContent = 'Ingresa un código.'; messageEl.className = 'error'; return; }
-        messageEl.textContent = 'Validando...';
-        try {
-            const response = await fetch(`${API_ENDPOINT}?action=validateDiscountCode&code=${code}&itemId=${itemId}`);
-            const result = await response.json();
-            if (result.status !== 'success') throw new Error(result.message);
-            const newPrice = calculateDiscountedPrice(originalPrice, result.discount);
-            finalPriceEl.textContent = newPrice.toLocaleString('es-MX');
-            messageEl.textContent = '¡Descuento aplicado!'; messageEl.className = 'success';
-        } catch (error) {
-            finalPriceEl.textContent = originalPrice.toLocaleString('es-MX');
-            messageEl.textContent = error.message;
-            messageEl.className = 'error';
-        }
-    }
-
-    function calculateDiscountedPrice(originalPrice, discount) {
-        const value = parseFloat(discount.Valor);
-        if (discount.Tipo === '%') return originalPrice * (1 - value / 100);
-        if (discount.Tipo === 'FIJO') return Math.max(0, originalPrice - value);
-        return originalPrice;
-    }
-    
-    function handlePaymentChange() {
-        const selected = document.querySelector('input[name="payment-method"]:checked').value;
-        document.getElementById('transfer-details').style.display = (selected === 'transfer') ? 'block' : 'none';
-        document.getElementById('payment-section').style.display = 'none'; // Siempre oculto por ahora
+        modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.pathname); };
     }
 
     function getCategoryImage(categoryName) {
@@ -220,12 +156,12 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<img src="${packageImageUrl}" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
         } else if (type === 'service') {
             card.className = 'service-card';
-            card.innerHTML = `<img src="${data.imagen}" alt="${data.nombre}"><div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
+            card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
         } else if (type === 'package-item') {
             card.className = 'package-card';
             const serviceCount = data.servicios_ids.length;
             const serviceText = serviceCount === 1 ? '1 servicio' : `${serviceCount} servicios`;
-            card.innerHTML = `<img src="${data.imagen}" alt="${data.nombre}"><div class="service-card-info"><h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p></div>`;
+            card.innerHTML = `<h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p>`;
         }
         return card;
     }
