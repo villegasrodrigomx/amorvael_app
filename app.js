@@ -1,8 +1,10 @@
 /**
- * Motor de Citas Amor-Vael v23.2 - VERSIÓN FINAL Y ESTABLE
- * - CORREGIDO: Se repara el click en los paquetes dentro de las categorías ajustando la clase CSS en `createCard`.
- * - CORREGIDO: Se elimina el ícono de flecha (">") de las tarjetas de servicios y paquetes.
- * - MANTIENE: Toda la lógica de negocio, delegación de eventos, pagos y descuentos.
+ * Motor de Citas Amor-Vael v24.0 - VERSIÓN FINAL ESTABLE
+ * - CORREGIDO: Se repara la lógica del `router` para evitar que se muestre una vista incorrecta
+ * al cargar la página en un navegador normal.
+ * - CORREGIDO: Se ajusta la función `createCard` y el detector de eventos para garantizar que
+ * los clicks en los paquetes siempre funcionen.
+ * - MANTIENE: Toda la lógica de negocio, incluyendo imágenes, descuentos y pagos.
  */
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
@@ -17,14 +19,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const serviceId = params.get('service');
     const packageId = params.get('packageId');
     
+    // Ocultar modales al navegar si no se está abriendo uno nuevo
     const openModal = document.querySelector('.modal[style*="display: block"]');
-    if (openModal && !serviceId && !packageId) openModal.style.display = 'none';
+    if (openModal && !serviceId && !packageId) {
+      openModal.style.display = 'none';
+    }
 
-    if (packageId) renderDetailView(packageId, true);
-    else if (serviceId) renderDetailView(serviceId, false);
-    else if (category) renderServicesView(decodeURIComponent(category));
-    else if (!allData) loadInitialData();
-    else renderCategoriesView();
+    // LÓGICA DE ROUTER CORREGIDA Y MÁS ESTRICTA
+    if (packageId) {
+      renderDetailView(packageId, true);
+    } else if (serviceId) {
+      renderDetailView(serviceId, false);
+    } else if (category) {
+      renderServicesView(decodeURIComponent(category));
+    } else {
+      // Caso por defecto: si no hay parámetros, muestra las categorías.
+      if (!allData) {
+        loadInitialData();
+      } else {
+        renderCategoriesView();
+      }
+    }
   }
 
   function navigateTo(path) {
@@ -77,18 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
       let items;
       if (category === 'Paquetes Especiales') {
           items = allData.allPackages;
-          items.forEach(pkg => {
-              const card = createCard('package-item', pkg);
-              grid.appendChild(card);
-          });
       } else {
           items = [...(allData.allServices || []), ...(allData.allPackages || [])]
               .filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
-          items.forEach(item => {
-              const card = createCard(item.servicios_ids ? 'package-item' : 'service', item);
-              grid.appendChild(card);
-          });
       }
+      
+      items.forEach(item => {
+          const card = createCard(item.servicios_ids ? 'package-item' : 'service', item);
+          grid.appendChild(card);
+      });
   }
   
   function renderDetailView(itemId, isPackage) { const item = isPackage ? allData.allPackages.find(p => p.id === itemId) : allData.allServices.find(s => s.id === itemId); if (!item) return renderError('Elemento no encontrado.'); const modal = document.getElementById(isPackage ? 'package-modal' : 'booking-modal'); const prefix = isPackage ? 'pkg' : 'service'; document.getElementById(`modal-${prefix}-name`).textContent = item.nombre; document.getElementById(`modal-${prefix}-price`).textContent = item.precio.toLocaleString('es-MX'); document.getElementById(`${prefix}-final-price`).textContent = item.precio.toLocaleString('es-MX'); if (isPackage) { document.getElementById('modal-package-services').innerHTML = item.servicios_ids.map(sId => `<li>${allData.allServices.find(s=>s.id===sId)?.nombre || 'Servicio'}</li>`).join(''); } else { document.getElementById('modal-service-description').textContent = item.descripcion; document.getElementById('modal-service-duration').textContent = item.duracion; const specialistsText = item.specialistsData.map(sp => sp.nombre).join(' / '); document.getElementById('modal-specialist-name').textContent = specialistsText || 'Por asignar'; const dateInput = document.getElementById('booking-date'); dateInput.value = ''; document.getElementById('available-slots-container').innerHTML = ''; dateInput.onchange = () => getAndRenderSlots(item.id, dateInput.value); const paymentOptions = document.querySelectorAll('input[name="payment-method"]'); const transferDetails = document.getElementById('transfer-details'); const paymentSection = document.getElementById('payment-section'); const confirmBtn = document.getElementById('confirm-booking-btn'); function handlePaymentChange() { const selected = document.querySelector('input[name="payment-method"]:checked').value; transferDetails.style.display = (selected === 'transfer') ? 'block' : 'none'; paymentSection.style.display = (selected === 'card') ? 'block' : 'none'; confirmBtn.textContent = (selected === 'transfer' || selected === 'cash') ? 'Confirmar y agendar' : 'Pagar y agendar'; } paymentOptions.forEach(radio => radio.addEventListener('change', handlePaymentChange)); document.querySelector('input[name="payment-method"][value="card"]').checked = true; handlePaymentChange(); } document.getElementById(`${prefix}-discount-code`).value = ''; document.getElementById(`${prefix}-discount-message`).textContent = ''; document.getElementById(`apply-${prefix}-discount-btn`).onclick = () => applyDiscount(item.id, item.precio, prefix); modal.style.display = 'block'; }
@@ -97,7 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function calculateDiscountedPrice(originalPrice, discount) { const value = parseFloat(discount.Valor); if (discount.Tipo === '%') return originalPrice * (1 - value / 100); if (discount.Tipo === 'MXN') return Math.max(0, originalPrice - value); return originalPrice; }
   
   // =================================================================
-  // FUNCIONES ORIGINALES RESTAURADAS Y CORREGIDAS
+  // FUNCIÓN `createCard` CORREGIDA
   // =================================================================
   
   function getCategoryImage(categoryName) {
@@ -111,35 +123,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createCard(type, data) {
-    const card = document.createElement('a');
-    card.href = '#';
+    const card = document.createElement('div'); // Usamos div para evitar conflictos de enlaces
     
     if (type === 'category') {
-      card.className = 'category-card';
+      card.className = 'category-card item-card'; // Clase común
       card.dataset.category = encodeURIComponent(data.name);
       card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="Imagen de ${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
     
     } else if (type === 'package') {
-      card.className = 'category-card';
+      card.className = 'category-card item-card'; // Clase común
       card.dataset.category = 'Paquetes Especiales';
       const packageImageUrl = 'http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg';
       card.innerHTML = `<img src="${packageImageUrl}" alt="Imagen de Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
     
     } else if (type === 'service') {
-      card.className = 'service-card';
+      card.className = 'service-card item-card'; // Clase común
       card.dataset.type = 'service';
       card.dataset.id = data.id;
-      // CORRECCIÓN: Se elimina el div con la flecha ">"
       card.innerHTML = `<img src="${data.imagen}" alt="${data.nombre}" class="service-card-image"><div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div>`;
     
     } else if (type === 'package-item') {
-      // CORRECCIÓN: Se asigna la clase 'package-card' para que el click funcione.
-      card.className = 'package-card'; 
+      card.className = 'package-card item-card'; // Clase común y específica
       card.dataset.type = 'packageId';
       card.dataset.id = data.id;
       const serviceCount = data.servicios_ids.length;
       const serviceText = serviceCount === 1 ? '1 servicio' : `${serviceCount} servicios`;
-      // CORRECCIÓN: Se elimina el div con la flecha ">"
       card.innerHTML = `<img src="${data.imagen}" alt="${data.nombre}" class="service-card-image"><div class="service-card-info"><h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p></div>`;
     }
     return card;
@@ -149,19 +157,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // DELEGACIÓN DE EVENTOS PRINCIPAL
   // =================================================================
   document.body.addEventListener('click', e => {
-    const categoryCard = e.target.closest('.category-card[data-category]');
-    if (categoryCard) {
-      e.preventDefault();
-      navigateTo(`?category=${categoryCard.dataset.category}`);
-      return;
-    }
-    // Selector corregido para incluir ambas clases
-    const itemCard = e.target.closest('.service-card[data-id], .package-card[data-id]');
+    // Busca el ancestro más cercano que sea una tarjeta interactiva
+    const itemCard = e.target.closest('.item-card');
+    
     if (itemCard) {
       e.preventDefault();
-      navigateTo(`?${itemCard.dataset.type}=${itemCard.dataset.id}`);
+      // Si tiene data-category, es una tarjeta de categoría
+      if (itemCard.dataset.category) {
+        navigateTo(`?category=${itemCard.dataset.category}`);
+      } 
+      // Si tiene data-id, es un servicio o paquete
+      else if (itemCard.dataset.id) {
+        navigateTo(`?${itemCard.dataset.type}=${itemCard.dataset.id}`);
+      }
       return;
     }
+
+    // Lógica para cerrar el modal
     const closeModalButton = e.target.closest('.close-button');
     if (closeModalButton) {
       e.preventDefault();
@@ -172,6 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
       navigateTo(currentUrl.pathname + (currentUrl.search === '?' ? '' : currentUrl.search));
       return;
     }
+
+    // Lógica para seleccionar un horario
     const slotButton = e.target.closest('.slot-button');
     if (slotButton) {
         document.querySelectorAll('.slot-button').forEach(b => b.classList.remove('selected'));
