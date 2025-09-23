@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const view = params.get('view');
         const category = params.get('category');
         const serviceId = params.get('service');
-        const packageId = params.get('package'); // Tu original usaba 'package'
+        const packageId = params.get('package');
         const purchaseId = params.get('purchaseId');
 
         if (view === 'client-login') renderClientLoginView();
@@ -131,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const pkg = allData.allPackages.find(p => p.id === packageId);
         if (!pkg) return renderError('Paquete no encontrado.');
         const modal = document.getElementById('package-modal');
-        // Tu lógica original mostraba "en construcción"
         document.getElementById('modal-package-name').textContent = "Funcionalidad de compra para \"" + pkg.nombre + "\" en construcción.";
         modal.style.display = 'block';
         modal.querySelector('.close-button').onclick = () => { modal.style.display = 'none'; navigateTo(window.location.pathname); };
@@ -161,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'service-card';
             card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${data.duracion} min · $${data.precio.toLocaleString('es-MX')} MXN</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
         } else if (type === 'package-item') {
-            card.className = 'package-card'; // Tu original usaba esta clase
+            card.className = 'package-card';
             const serviceCount = data.servicios_ids.length;
             const serviceText = serviceCount === 1 ? '1 servicio' : `${serviceCount} servicios`;
             card.innerHTML = `<h4>${data.nombre}</h4><p>Incluye ${serviceText}</p><p class="package-price">$${data.precio.toLocaleString('es-MX')} MXN</p>`;
