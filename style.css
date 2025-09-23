@@ -54,7 +54,7 @@ body {
   margin-top: 20px;
 }
 
-.category-card, .service-card {
+.category-card, .service-card, .package-card {
   background-color: var(--white);
   border-radius: 12px;
   overflow: hidden;
@@ -63,31 +63,50 @@ body {
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  text-decoration: none;
+  color: inherit;
 }
 
-.category-card:hover, .service-card:hover {
+.category-card:hover, .service-card:hover, .package-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-.category-card img, .service-card img {
+.category-card-image, .service-card-image {
   width: 100%;
   height: 150px;
   object-fit: cover;
 }
 
-.category-card h3, .service-card h4 {
-  margin: 0;
+.category-card-title {
   padding: 15px;
+}
+
+.category-card-title h3 {
+  margin: 0;
   font-weight: 500;
   color: var(--secondary-color);
+}
+
+.service-card-info {
+  padding: 15px;
   flex-grow: 1;
 }
 
-.service-card p {
-  margin: 0 15px 15px;
-  font-weight: bold;
-  color: var(--primary-color);
+.service-card-info h4 {
+  margin: 0 0 5px 0;
+  font-weight: 500;
+}
+
+.service-card-info p {
+  margin: 0;
+  font-size: 0.9em;
+}
+
+.package-price {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: 10px !important;
 }
 
 /* =================================================================
@@ -126,19 +145,6 @@ body {
   cursor: pointer;
 }
 
-.close-button:hover, .close-button:focus {
-  color: #000;
-}
-
-.modal-content h3 {
-  margin-top: 0;
-  color: var(--secondary-color);
-}
-
-.modal-content ul {
-    padding-left: 20px;
-}
-
 /* =================================================================
    Formularios y Controles
    ================================================================= */
@@ -168,15 +174,6 @@ body {
   margin-top: 15px;
 }
 
-.cta-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.cta-button:hover:not(:disabled) {
-  background-color: var(--secondary-color);
-}
-
 #available-slots-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
@@ -194,22 +191,12 @@ body {
     color: var(--primary-color);
     border-radius: 8px;
     cursor: pointer;
-    transition: all 0.2s ease;
 }
 
 .slot-button.selected {
     background-color: var(--primary-color);
     color: var(--white);
     font-weight: bold;
-}
-
-.payment-options {
-    margin: 15px 0;
-}
-
-.payment-options label {
-    display: block;
-    margin-bottom: 5px;
 }
 
 /* =================================================================
@@ -241,7 +228,6 @@ body {
 .final-price {
     font-size: 1.2em;
     font-weight: bold;
-    color: var(--text-color);
     text-align: right;
     margin-top: 10px;
 }
@@ -255,27 +241,6 @@ body {
 
 .success { color: var(--success-color); }
 .error { color: var(--error-color); }
-
-/* =================================================================
-   Vistas de Cliente
-   ================================================================= */
-.client-login-view, .my-packages-view {
-  background-color: var(--white);
-  padding: 30px;
-  border-radius: 12px;
-  max-width: 500px;
-  margin: 0 auto;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-.client-package-card {
-  background-color: #fdfdfd;
-  padding: 20px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
-}
-.client-package-card h4 { margin: 0 0 10px 0; font-weight: 500; }
 
 /* =================================================================
    Utilidades (Loading, Errores, Botones)
@@ -307,9 +272,6 @@ body {
     color: var(--secondary-color);
     text-decoration: none;
     font-weight: 500;
-}
-.back-link:hover {
-    text-decoration: underline;
 }
 
 .client-area-link {
