@@ -3,22 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Amor-Vael - Sistema de Citas</title>
+    <title>AMOR-VAEL Beauty Spa, Nails & Lashes - Citas</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#E5A1AA">
     <link rel="stylesheet" href="style.css">
-    <script src="https://js.stripe.com/v3/"></script>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
 
     <header class="main-header">
-        <a href="index.html" style="text-decoration: none;">
+        <a href="index.html">
             <h1>AMOR-VAEL Beauty Spa, Nails & Lashes</h1>
         </a>
     </header>
 
     <main id="app-container" class="container">
-        </main>
+        <!-- Las vistas de la app se cargarán aquí -->
+    </main>
 
+    <!-- ====================================================== -->
+    <!-- PLANTILLAS DE VISTAS (Templates)                       -->
+    <!-- ====================================================== -->
     <template id="template-loading">
         <div class="loading-spinner"></div>
     </template>
@@ -29,77 +34,55 @@
                 <a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a>
             </div>
             <h2>Nuestros Servicios</h2>
-            <div id="categories-grid" class="categories-grid"></div>
+            <div class="category-grid"></div>
         </div>
     </template>
 
-    <template id="template-services-view">
-         <div class="view">
-            <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
-            <h2 id="category-title"></h2>
-            <div id="services-grid" class="services-grid"></div>
+    <!-- ¡NUEVAS PLANTILLAS PARA EL ÁREA DE CLIENTES! -->
+    <template id="template-client-login-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a>
+            <h2>Consulta tus Paquetes</h2>
+            <div class="login-form">
+                <p>Introduce tu correo electrónico para ver tus paquetes comprados y agendar tus sesiones restantes.</p>
+                <div class="form-group">
+                    <label for="client-login-email">Correo Electrónico:</label>
+                    <input type="email" id="client-login-email" placeholder="tu.email@ejemplo.com">
+                </div>
+                <button id="find-packages-btn" class="cta-button">Buscar mis Paquetes</button>
+                <div id="login-message"></div>
+            </div>
+        </div>
+    </template>
+
+    <template id="template-client-packages-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a>
+            <h2>Mis Paquetes</h2>
+            <div id="client-package-list"></div>
+        </div>
+    </template>
+
+    <template id="template-package-services-view">
+        <div class="view">
+            <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a mis Paquetes</a>
+            <h2 class="view-title">Selecciona un Servicio para Agendar</h2>
+            <div class="service-list"></div>
         </div>
     </template>
     
-    <div id="package-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h3 id="modal-package-name"></h3>
-            <p>Este paquete incluye:</p>
-            <ul id="modal-package-services"></ul>
-            <p><strong>Precio:</strong> $<span id="modal-package-price"></span> MXN</p>
-            <div id="package-purchase-form">
-                <div class="client-details"><input type="text" id="pkg-client-name" placeholder="Nombre completo" required class="form-input"><input type="email" id="pkg-client-email" placeholder="Correo electrónico" required class="form-input"><input type="tel" id="pkg-client-phone" placeholder="Teléfono" required class="form-input"></div>
-                <div class="discount-section"><input type="text" id="pkg-discount-code" placeholder="Código promocional" class="form-input"><button type="button" id="apply-pkg-discount-btn">Aplicar</button></div>
-                <p id="pkg-discount-message"></p>
-                <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
-                <button id="confirm-package-purchase-btn" class="cta-button">Confirmar Compra</button>
-                <div id="pkg-modal-message" class="modal-feedback"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="booking-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <div id="booking-modal-content">
-                <h3 id="modal-service-name"></h3>
-                <p id="modal-service-description"></p>
-                <p><strong>Duración:</strong> <span id="modal-service-duration"></span> min.</p>
-                <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
-                <p><strong>Precio:</strong> $<span id="modal-service-price"></span> MXN</p>
-            </div>
-            <div id="booking-form-container">
-                <input type="date" id="booking-date" class="form-input">
-                <div id="available-slots-container"></div>
-                <div class="client-details"><input type="text" id="client-name" placeholder="Nombre completo" class="form-input"><input type="email" id="client-email" placeholder="Correo electrónico" class="form-input"><input type="tel" id="client-phone" placeholder="Teléfono" class="form-input"></div>
-                <div class="discount-section"><input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input"><button type="button" id="apply-service-discount-btn">Aplicar</button></div>
-                <p id="service-discount-message"></p>
-                <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
-                <div id="payment-options-container">
-                    <label>¿Cómo te gustaría pagar?</label>
-                    <div class="payment-options">
-                        <label><input type="radio" name="payment-method" value="card" checked> Pagar ahora con tarjeta</label>
-                        <label><input type="radio" name="payment-method" value="transfer"> Pagar por transferencia</label>
-                        <label><input type="radio" name="payment-method" value="cash"> Pagar en el spa</label>
-                    </div>
-                </div>
-                <div id="transfer-details" style="display: none;">
-                   <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
-                    <p><strong>Banco:</strong> NU México<br>
-                       <strong>CLABE:</strong> 638180010101648038<br>
-                       <strong>Titular:</strong> Ana Paula Ortiz Morales</p>
-                 </div>
-                <div id="payment-section" style="display: none;">
-                    <label>Datos de la tarjeta:</label>
-                    <div id="payment-element" class="StripeElement"></div>
-                </div>
-                <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
-                <div id="modal-message" style="display: none;"></div>
-            </div>
-        </div>
-    </div>
+    <!-- ... (El resto de las plantillas no cambian) ... -->
+    <template id="template-services-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a> <h2 class="view-title"></h2> <div class="service-list"></div> </div> </template>
+    <template id="template-packages-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver al Inicio</a> <h2 class="view-title">Paquetes Especiales</h2> <div class="package-list"></div> </div> </template>
+    <template id="template-package-detail-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Paquetes</a> <div class="package-detail-card"> <div class="package-info"> <h2 class="view-title"></h2> <p class="package-price"></p> <p class="package-description"></p> <div class="package-services-included"> <h4>Servicios Incluidos:</h4> <ul></ul> </div> <button class="cta-button" id="buy-package-btn">Comprar Paquete</button> </div> </div> </div> </template>
+    <template id="template-service-detail-view"> <div class="view"> <a href="#" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Servicios</a> <div class="service-detail-card"> <div class="service-gallery"> <img class="service-main-image" src="https://placehold.co/800x600/E5A1AA/FFFFFF?text=Amor-Vael" alt="Imagen del servicio"> </div> <div class="service-info"> <h2 class="view-title"></h2> <p class="service-price"></p> <p class="service-duration"></p> <p class="service-description">Cargando descripción...</p> <button class="cta-button" id="show-calendar-btn">Agendar Cita</button> </div> </div> <div class="booking-section" style="display: none;"> <h3>Selecciona una Fecha</h3> <div class="calendar-container"> <div class="calendar-header"> <button id="prevMonth">&lt;</button> <h4 id="monthYear"></h4> <button id="nextMonth">&gt;</button> </div> <div class="calendar-grid weekdays"> <div class="weekday">Dom</div><div class="weekday">Lun</div><div class="weekday">Mar</div><div class="weekday">Mié</div><div class="weekday">Jue</div><div class="weekday">Vie</div><div class="weekday">Sáb</div> </div> <div class="calendar-grid" id="calendarDays"></div> </div> <div class="slots-container" style="display: none;"> <h4>Horarios Disponibles</h4> <div id="availableSlots" class="slots-grid"></div> </div> </div> </div> </template>
+    <div id="booking-modal" class="modal-overlay" style="display: none;"> <div class="modal-content"> <button class="close-modal-btn" id="close-modal">&times;</button> <h3 id="modal-title">Revisa y Confirma tu Cita</h3> <div class="booking-summary"> <p><strong>Servicio:</strong> <span id="modal-service-name"></span></p> <p><strong>Fecha:</strong> <span id="modal-date"></span></p> <p><strong>Hora:</strong> <span id="modal-time"></span></p> <p><strong>Precio:</strong> <span id="modal-price"></span></p> </div> <div class="booking-form"> <div class="form-group"> <label for="clientName">Nombre Completo:</label> <input type="text" id="clientName" required> </div> <div class="form-group"> <label for="clientEmail">Correo Electrónico:</label> <input type="email" id="clientEmail" required> </div> <div class="form-group"> <label for="clientPhone">Celular:</label> <input type="tel" id="clientPhone" required> </div> <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button> <div id="modal-message" style="display: none;"></div> </div> </div> </div>
 
     <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js');
+        }
+    </script>
 </body>
 </html>
