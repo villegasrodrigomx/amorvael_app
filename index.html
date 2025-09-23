@@ -9,23 +9,16 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-
-    <header class="main-header">
-        <a href="index.html" style="text-decoration: none;">
-            <h1>AMOR-VAEL Beauty Spa, Nails & Lashes</h1>
-        </a>
-    </header>
-
-    <main id="app-container" class="container">
-        </main>
-
+    <header class="main-header"><a href="index.html" style="text-decoration: none;"><h1>AMOR-VAEL Beauty Spa, Nails & Lashes</h1></a></header>
+    <main id="app-container" class="container"></main>
     <template id="template-loading"><div class="loading-spinner"></div></template>
     <template id="template-categories-view">
         <div class="view">
             <div id="client-area-entry"><a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a></div>
             <h2>Nuestros Servicios</h2>
             <div id="categories-grid" class="categories-grid"></div>
-            <div id="version-footer"></div> </div>
+            <div id="version-footer"></div>
+        </div>
     </template>
     <template id="template-services-view">
          <div class="view">
@@ -34,7 +27,6 @@
             <div id="services-grid" class="services-grid"></div>
         </div>
     </template>
-
     <div id="package-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -48,11 +40,9 @@
                 <p id="pkg-discount-message"></p>
                 <p class="final-price"><strong>Total a pagar:</strong> $<span id="pkg-final-price"></span> MXN</p>
                 <button id="confirm-package-purchase-btn" class="cta-button">Confirmar Compra</button>
-                <div id="pkg-modal-message" class="modal-feedback"></div>
             </div>
         </div>
     </div>
-
     <div id="booking-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -80,20 +70,16 @@
                 </div>
                 <div id="transfer-details" style="display: none;">
                    <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
-                    <p><strong>Banco:</strong> NU México<br>
-                       <strong>CLABE:</strong> 638180010101648038<br>
-                       <strong>Titular:</strong> Ana Paula Ortiz Morales</p>
+                    <p><strong>Banco:</strong> NU México<br><strong>CLABE:</strong> 638180010101648038<br><strong>Titular:</strong> Ana Paula Ortiz Morales</p>
                  </div>
                 <div id="payment-section" style="display: none;">
                     <label>Datos de la tarjeta:</label>
                     <div id="payment-element" class="StripeElement"></div>
                 </div>
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
-                <div id="modal-message" style="display: none;"></div>
             </div>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
