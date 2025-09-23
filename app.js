@@ -1,6 +1,6 @@
 /**
- * Motor de Citas Amor-Vael v27.0 - VERSIÓN FINAL BASADA EN ORIGINALES
- * - Se restaura la lógica del `router` y `createCard` del archivo app.js original del cliente.
+ * Motor de Citas Amor-Vael v2.01 - VERSIÓN DE PRODUCCIÓN FINAL Y ESTABLE
+ * - Basado 100% en el código original del cliente para garantizar la estabilidad.
  * - MEJORAS INTEGRADAS: Se inyecta la lógica para mostrar especialistas, habilitar compra de paquetes
  * y validar descuentos de forma compatible con el código original.
  * - LÓGICA DE PAGO CORREGIDA: Se desactiva el pago con tarjeta y se manejan correctamente los servicios de $0.00.
@@ -66,6 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
             packageCard.onclick = (e) => { e.preventDefault(); navigateTo('?category=Paquetes Especiales'); };
             grid.appendChild(packageCard);
         }
+        // Añadir versión
+        const versionFooter = document.getElementById('version-footer');
+        if(versionFooter) versionFooter.textContent = 'v.2.01';
     }
   
     function renderServicesView(category) {
@@ -189,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handlePaymentChange() {
         const selected = document.querySelector('input[name="payment-method"]:checked').value;
         document.getElementById('transfer-details').style.display = (selected === 'transfer') ? 'block' : 'none';
-        document.getElementById('payment-section').style.display = 'none'; // Siempre oculto por ahora
+        document.getElementById('payment-section').style.display = 'none';
     }
 
     function getCategoryImage(categoryName) {
