@@ -37,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
             const result = await response.json();
             if (result.status === 'success') {
-                allData = result;
+                // El backend ahora devuelve {status, data: {allServices...}}
+                allData = result.data;
                 router();
             } else { throw new Error(result.message || 'No se pudieron cargar los datos.'); }
         } catch (error) { renderError(error.message); }
@@ -53,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         grid.innerHTML = '';
         
         let categories = [];
-        if (allData && allData.services) categories = [...new Set(allData.services.map(s => s.categoria))];
+        if (allData && allData.allServices) categories = [...new Set(allData.allServices.map(s => s.categoria))];
         
         categories.forEach(categoryName => {
             const card = createCard('category', { name: categoryName });
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(card);
         });
 
-        if (allData && allData.packages && allData.packages.length > 0) {
+        if (allData && allData.allPackages && allData.allPackages.length > 0) {
             const packageCard = createCard('package', {});
             packageCard.onclick = (e) => { e.preventDefault(); navigateTo('?category=Paquetes Especiales'); };
             grid.appendChild(packageCard);
@@ -79,9 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let items;
         if (category === 'Paquetes Especiales') {
-            items = allData.packages;
+            items = allData.allPackages;
         } else {
-            items = [...(allData.services || []), ...(allData.packages || [])]
+            items = [...(allData.allServices || []), ...(allData.allPackages || [])]
                 .filter(item => item.categoria && item.categoria.trim().toUpperCase() === category.trim().toUpperCase());
         }
         
@@ -94,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function renderDetailView(itemId, isPackage) {
-        const dataSource = isPackage ? allData.packages : allData.services;
+        const dataSource = isPackage ? allData.allPackages : allData.allServices;
         const item = dataSource.find(i => i.id === itemId);
         if (!item) return renderError('Elemento no encontrado.');
 
@@ -106,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById(`${prefix}-final-price`).textContent = item.precio.toLocaleString('es-MX');
 
         if (isPackage) {
-            document.getElementById('modal-package-services').innerHTML = item.servicios_ids.map(sId => `<li>${allData.services.find(s=>s.id===sId)?.nombre || 'Servicio'}</li>`).join('');
+            document.getElementById('modal-package-services').innerHTML = item.servicios_ids.map(sId => `<li>${allData.allServices.find(s=>s.id===sId)?.nombre || 'Servicio'}</li>`).join('');
         } else {
             document.getElementById('modal-service-description').textContent = item.descripcion;
             document.getElementById('modal-service-duration').textContent = item.duracion;
