@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             packageCard.onclick = (e) => { e.preventDefault(); navigateTo('?category=Paquetes Especiales'); };
             grid.appendChild(packageCard);
         }
-        // Añadir versión
         const versionFooter = document.getElementById('version-footer');
         if(versionFooter) versionFooter.textContent = 'v.2.01';
     }
@@ -119,16 +118,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('available-slots-container').innerHTML = '';
             dateInput.onchange = () => getAndRenderSlots(item.id, dateInput.value);
 
-            // Lógica de Pago
             const paymentContainer = document.getElementById('payment-options-container');
+            const discountContainer = modal.querySelector('.discount-section');
+            const finalPriceContainer = modal.querySelector('.final-price');
+
             if (item.precio > 0) {
                 paymentContainer.style.display = 'block';
+                discountContainer.style.display = 'flex';
+                finalPriceContainer.style.display = 'block';
                 const paymentOptions = document.querySelectorAll('input[name="payment-method"]');
                 paymentOptions.forEach(radio => radio.addEventListener('change', handlePaymentChange));
                 document.querySelector('input[name="payment-method"][value="transfer"]').checked = true;
                 handlePaymentChange();
             } else {
                 paymentContainer.style.display = 'none';
+                discountContainer.style.display = 'none';
+                finalPriceContainer.style.display = 'none';
                 document.getElementById('transfer-details').style.display = 'none';
                 document.getElementById('payment-section').style.display = 'none';
             }
@@ -152,7 +157,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=${date}`);
             const result = await response.json();
             if (result.status === 'success' && result.availableSlots.length > 0) {
-                slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button" data-slot="${slot}">${slot}</button>`).join('');
+                slotsContainer.innerHTML = result.availableSlots.map(slot => `<button class="slot-button">${slot}</button>`).join('');
             } else {
                 slotsContainer.innerHTML = '<p>No hay horarios disponibles para esta fecha.</p>';
             }
@@ -213,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}" class="category-card-image"><div class="category-card-title"><h3>${data.name}</h3></div>`;
         } else if (type === 'package') {
             card.className = 'category-card';
-            const packageImageUrl = 'http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg';
+            const packageImageUrl = data.imagen || 'http://amor-vael.com/wp-content/uploads/2021/08/lotus-spa-template-services-header-img-bg.jpg';
             card.innerHTML = `<img src="${packageImageUrl}" alt="Paquetes" class="category-card-image"><div class="category-card-title"><h3>Paquetes Especiales</h3></div>`;
         } else if (type === 'service') {
             card.className = 'service-card';
@@ -227,7 +232,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return card;
     }
   
-    // --- INICIALIZACIÓN ---
     router();
     window.addEventListener('popstate', router);
 });
