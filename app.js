@@ -3,11 +3,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let allData = null;
     let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
     
-    // --- CONFIGURACIÓN ---
     const API_ENDPOINT = '/.netlify/functions/engine';
     const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
-    // --- ROUTER Y FUNCIONES DE RENDERIZADO ---
     function router() {
         clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
         const params = new URLSearchParams(window.location.search);
@@ -68,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(packageCard);
         }
         
-        // Añadir versión
         const versionFooter = document.getElementById('version-footer');
         if(versionFooter) versionFooter.textContent = 'v.2.01';
 
