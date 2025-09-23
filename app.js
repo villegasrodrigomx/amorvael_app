@@ -66,7 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
             grid.appendChild(packageCard);
         }
         
-        // Añadir versión
         const versionFooter = document.getElementById('version-footer');
         if(versionFooter) versionFooter.textContent = 'v.2.01';
 
