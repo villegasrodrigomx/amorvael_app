@@ -19,14 +19,20 @@
     <main id="app-container" class="container">
         </main>
 
-    <template id="template-loading"><div class="loading-spinner"></div></template>
+    <template id="template-loading">
+        <div class="loading-spinner"></div>
+    </template>
+
     <template id="template-categories-view">
         <div class="view">
-            <div id="client-area-entry"><a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a></div>
+            <div id="client-area-entry">
+                <a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda tus sesiones aquí <i class="ph-bold ph-arrow-right"></i></a>
+            </div>
             <h2>Nuestros Servicios</h2>
             <div id="categories-grid" class="categories-grid"></div>
         </div>
     </template>
+
     <template id="template-services-view">
          <div class="view">
             <a href="index.html" class="back-link"><i class="ph-bold ph-arrow-left"></i> Volver a Categorías</a>
@@ -34,7 +40,7 @@
             <div id="services-grid" class="services-grid"></div>
         </div>
     </template>
-
+    
     <div id="package-modal" class="modal">
         <div class="modal-content">
             <span class="close-button">&times;</span>
@@ -70,7 +76,6 @@
                 <div class="discount-section"><input type="text" id="service-discount-code" placeholder="Código promocional" class="form-input"><button type="button" id="apply-service-discount-btn">Aplicar</button></div>
                 <p id="service-discount-message"></p>
                 <p class="final-price"><strong>Total a pagar:</strong> $<span id="service-final-price"></span> MXN</p>
-                
                 <div id="payment-options-container">
                     <label>¿Cómo te gustaría pagar?</label>
                     <div class="payment-options">
@@ -80,16 +85,15 @@
                     </div>
                 </div>
                 <div id="transfer-details" style="display: none;">
-                   <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp: <strong>984 234 3935</strong></p>
+                   <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
                     <p><strong>Banco:</strong> NU México<br>
                        <strong>CLABE:</strong> 638180010101648038<br>
                        <strong>Titular:</strong> Ana Paula Ortiz Morales</p>
-                </div>
+                 </div>
                 <div id="payment-section" style="display: none;">
                     <label>Datos de la tarjeta:</label>
                     <div id="payment-element" class="StripeElement"></div>
                 </div>
-                
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
                 <div id="modal-message" style="display: none;"></div>
             </div>
@@ -99,4 +103,3 @@
     <script src="app.js"></script>
 </body>
 </html>
-
