@@ -14,7 +14,6 @@ body { background-color: var(--bg-color); color: var(--text-color); margin: 0; l
 .service-card-info h4 { margin: 0 0 5px 0; font-weight: 500; }
 .service-card-info p { margin: 0; font-size: 0.9em; }
 .service-card-arrow { padding: 15px; text-align: right; font-size: 1.2em; color: var(--primary-color); }
-.package-price { font-weight: bold; color: var(--primary-color); margin-top: 10px !important; }
 .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
 .modal-content { background-color: var(--white); margin: 5% auto; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
 .close-button { color: #aaa; position: absolute; top: 15px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; }
@@ -23,13 +22,6 @@ body { background-color: var(--bg-color); color: var(--text-color); margin: 0; l
 #available-slots-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin: 20px 0; max-height: 180px; overflow-y: auto; }
 .slot-button { padding: 10px; border: 1px solid var(--primary-color); background-color: var(--white); color: var(--primary-color); border-radius: 8px; cursor: pointer; }
 .slot-button.selected { background-color: var(--primary-color); color: var(--white); }
-.discount-section { display: flex; gap: 10px; margin-top: 15px; align-items: center; }
-.discount-section input { flex-grow: 1; margin-bottom: 0; }
-.discount-section button { padding: 12px 15px; background-color: var(--secondary-color); color: var(--white); border: none; border-radius: 8px; cursor: pointer; font-weight: 500; flex-shrink: 0; }
-.final-price { font-size: 1.2em; font-weight: bold; text-align: right; margin-top: 10px; }
-#service-discount-message, #pkg-discount-message { text-align: center; margin-top: 10px; font-weight: 500; min-height: 20px; }
-.success { color: var(--success-color); }
-.error { color: var(--error-color); }
 .loading-spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--primary-color); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 50px auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 .error-message { color: var(--error-color); text-align: center; padding: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; margin-top: 15px; }
