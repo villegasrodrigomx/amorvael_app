@@ -35,12 +35,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (allData) return allData;
     try {
       const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
-      if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
+      if (!response.ok) throw new Error('Respuesta no válida del servidor (no fue 200 OK).');
+      
       const data = await response.json();
-      if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos.');
+      
+      // --- LÍNEA DE DEPURACIÓN CLAVE ---
+      console.log('Respuesta COMPLETA recibida del backend:', data);
+      // ---------------------------------
+
+      if (data.status !== 'success') throw new Error(data.message || 'El backend reportó un error.');
+      
       allData = data;
       return allData;
-    } catch (error) { console.error("Fetch App Data Error:", error); throw error; }
+    } catch (error) {
+      console.error("Error crítico en fetchAppData:", error);
+      throw error;
+    }
   }
 
   async function renderCategoriesView() {
@@ -453,4 +463,5 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
 
