@@ -3,17 +3,11 @@
  * Versión 6.0 (Ajustes de UI en Vista de Detalle)
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // =================================================================
-    // INICIALIZACIÓN Y ESTADO DE LA APLICACIÓN
-    // =================================================================
     const appContainer = document.getElementById('app-container');
     let allData = null;
     let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
     const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlZJ0mTAUDaE_c9_oTCvSFrwTG6DC4sWRv8NtbMw1yxXx2NeP3FmvRK5hIN81_R7QdTQ/exec';
 
-    // =================================================================
-    // ROUTER PRINCIPAL
-    // =================================================================
     function router() {
         clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
         const params = new URLSearchParams(window.location.search);
@@ -32,9 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         else renderCategoriesView();
     }
 
-    // =================================================================
-    // LÓGICA DE RENDERIZADO Y OBTENCIÓN DE DATOS
-    // =================================================================
     function renderView(templateId) {
         const template = document.getElementById(templateId);
         if (!template) {
@@ -61,9 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // =================================================================
-    // VISTAS PRINCIPALES
-    // =================================================================
     async function renderCategoriesView() {
         const view = renderView('template-categories-view');
         if (!view) return;
@@ -74,10 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetchAppData();
             const servicios = allData.servicios || [];
             const paquetes = allData.paquetes || [];
-            const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))]
-                .filter(Boolean)
-                .filter(cat => cat.toLowerCase() !== 'paquetes');
-
+            const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))].filter(Boolean).filter(cat => cat.toLowerCase() !== 'paquetes');
             categoryGrid.innerHTML = '';
             if (categories.length === 0) {
                 categoryGrid.innerHTML = '<p>No se encontraron categorías disponibles.</p>';
@@ -106,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const servicios = (allData.servicios || []).filter(s => s.categoria === decodedCategory).map(s => ({ ...s, type: 'service' }));
             const paquetes = (allData.paquetes || []).filter(p => p.categoria === decodedCategory).map(p => ({ ...p, type: 'package' }));
             const items = [...servicios, ...paquetes];
-
             listContainer.innerHTML = '';
             if (items.length === 0) {
                 listContainer.innerHTML = '<p>No hay elementos en esta categoría.</p>';
@@ -135,7 +119,6 @@ document.addEventListener('DOMContentLoaded', () => {
             view.querySelector('.view-title').textContent = service.nombre;
             if (service.especialistas && allData.especialistas) {
                 const names = service.especialistas.map(id => (allData.especialistas.find(s => s.id.toUpperCase() === id.toUpperCase()) || {}).nombre).filter(Boolean).join(' • ');
-                // --- ¡CAMBIO REALIZADO AQUÍ! ---
                 view.querySelector('#service-specialists-list').textContent = names ? `by: ${names}` : '';
             }
             view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo(purchaseId ? `?view=book-package-session&purchaseId=${purchaseId}` : `?category=${encodeURIComponent(service.categoria)}`); });
@@ -154,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             appContainer.innerHTML = `<p class="error-message">Error: ${error.message}</p><a href="#" onclick="navigateTo('/'); return false;">Volver</a>`;
         }
     }
-
+    
     async function renderPackageDetailView(packageId) {
         const view = renderView('template-package-detail-view');
         if (!view) return;
@@ -520,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function toISODateString(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
     function navigateTo(path) { window.history.pushState({}, '', path); router(); }
     function clearClientDataAndGoHome() { sessionStorage.removeItem('amorVaelClientData'); clientData = null; navigateTo('/'); }
-  
+
     router();
     window.addEventListener('popstate', router);
 });
