@@ -1,8 +1,6 @@
 /**
  * Motor de Citas Amor-Vael - style.css
- * Versión 5.0 Estable y Completa
- * Fecha: 24 de Septiembre, 2025
- * Descripción: Hoja de estilos completa para la aplicación de citas.
+ * Versión 6.0 (Ajustes de UI en Vista de Detalle)
  */
 
 /* =================================================================
@@ -103,7 +101,7 @@ body {
 .category-card-image {
   width: 100%;
   height: 200px;
-  object-fit: cover; /* Asegura uniformidad en las imágenes */
+  object-fit: cover;
   display: block;
 }
 
@@ -155,20 +153,30 @@ body {
 }
 
 /* =================================================================
-   5. VISTA DE DETALLE (SERVICIO Y PAQUETE)
+   5. VISTA DE DETALLE (SERVICIO Y PAQUETE) - ¡CON CAMBIOS!
    ================================================================= */
 .service-detail-card {
   background-color: var(--white);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+  display: block; /* Por defecto para móviles */
+}
+
+/* En pantallas más grandes, usamos un grid para las columnas */
+@media (min-width: 768px) {
+  .service-detail-card {
+    display: grid;
+    grid-template-columns: 40% 60%; /* Imagen 40%, Info 60% */
+  }
 }
 
 .service-gallery .service-main-image {
   width: 100%;
-  height: 300px;
+  height: 100%; /* La altura se adapta al contenedor del grid */
   object-fit: cover;
   display: block;
+  min-height: 300px; /* Altura mínima para que no colapse */
 }
 
 .service-info {
