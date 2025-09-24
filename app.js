@@ -1,3 +1,10 @@
+/**
+ * Motor de Citas Amor-Vael - app.js
+ * Versión Final Estable: 2.0
+ * Fecha: 24 de Septiembre, 2025
+ * Descripción: Frontend completo que consume datos del backend de Apps Script.
+ * Esta versión utiliza claves de datos consistentes en español.
+ */
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
@@ -5,6 +12,9 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlZJ0mTAUDaE_c9_oTCvSFrwTG6DC4sWRv8NtbMw1yxXx2NeP3FmvRK5hIN81_R7QdTQ/exec';
 
+  // =================================================================
+  // ROUTER Y LÓGICA DE VISTAS
+  // =================================================================
   function router() {
     clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
     const params = new URLSearchParams(window.location.search);
@@ -35,22 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (allData) return allData;
     try {
       const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
-      if (!response.ok) throw new Error('Respuesta no válida del servidor (no fue 200 OK).');
-      
+      if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
       const data = await response.json();
-      
-      // --- LÍNEA DE DEPURACIÓN CLAVE ---
-      console.log('Respuesta COMPLETA recibida del backend:', data);
-      // ---------------------------------
-
-      if (data.status !== 'success') throw new Error(data.message || 'El backend reportó un error.');
-      
+      if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos.');
       allData = data;
       return allData;
-    } catch (error) {
-      console.error("Error crítico en fetchAppData:", error);
-      throw error;
-    }
+    } catch (error) { console.error("Fetch App Data Error:", error); throw error; }
   }
 
   async function renderCategoriesView() {
@@ -61,29 +61,21 @@ document.addEventListener('DOMContentLoaded', () => {
     categoryGrid.innerHTML = `<div class="loading-spinner"></div>`;
     try {
       await fetchAppData();
-      
-      // La corrección está aquí: (allData.services || [])
-      // Si allData.services no existe, usa un arreglo vacío [] en su lugar.
-      const services = allData.services || [];
-      const packages = allData.packages || [];
-
-      const categories = [...new Set([...services, ...packages].map(item => item.categoria))].filter(Boolean);
-      
+      const servicios = allData.servicios || [];
+      const paquetes = allData.paquetes || [];
+      const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))].filter(Boolean);
       categoryGrid.innerHTML = '';
       if (categories.length === 0) {
-        categoryGrid.innerHTML = '<p>No se encontraron categorías. Revisa que las pestañas "Servicios" y "Paquetes" existan en tu Google Sheet.</p>';
+        categoryGrid.innerHTML = '<p>No se encontraron categorías. Revisa que las pestañas "Servicios" y "Paquetes" tengan datos y la columna "Categoria".</p>';
         return;
       }
-
       categories.forEach(name => {
         const card = createCard('category', { name });
         card.addEventListener('click', (e) => { e.preventDefault(); navigateTo(`?category=${encodeURIComponent(name)}`); });
         categoryGrid.appendChild(card);
       });
-    } catch (error) { 
-        categoryGrid.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`; 
-    }
-}
+    } catch (error) { categoryGrid.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`; }
+  }
 
   async function renderServicesView(categoryName) {
     const view = renderView('template-services-view');
@@ -95,9 +87,9 @@ document.addEventListener('DOMContentLoaded', () => {
     listContainer.innerHTML = `<div class="loading-spinner"></div>`;
     try {
       await fetchAppData();
-      const services = allData.services.filter(s => s.categoria === decodedCategory).map(s => ({ ...s, type: 'service' }));
-      const packages = allData.packages.filter(p => p.categoria === decodedCategory).map(p => ({ ...p, type: 'package' }));
-      const items = [...packages, ...services]; // Mostrar paquetes primero
+      const servicios = (allData.servicios || []).filter(s => s.categoria === decodedCategory).map(s => ({ ...s, type: 'service' }));
+      const paquetes = (allData.paquetes || []).filter(p => p.categoria === decodedCategory).map(p => ({ ...p, type: 'package' }));
+      const items = [...paquetes, ...servicios];
       listContainer.innerHTML = '';
       if (items.length === 0) { listContainer.innerHTML = '<p>No hay elementos en esta categoría.</p>'; return; }
       items.forEach(item => {
@@ -114,12 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
     view.prepend(document.getElementById('template-loading').content.cloneNode(true));
     try {
       await fetchAppData();
-      const service = allData.services.find(s => s.id === serviceId);
+      const service = allData.servicios.find(s => s.id === serviceId);
       if (!service) throw new Error('Servicio no encontrado.');
       view.querySelector('.loading-spinner')?.remove();
       view.querySelector('.view-title').textContent = service.nombre;
-      if (service.especialistas && allData.specialists) {
-        const names = service.especialistas.map(id => allData.specialists.find(s => s.id.toUpperCase() === id.toUpperCase())?.nombre).filter(Boolean).join(' • ');
+      if (service.especialistas && allData.especialistas) {
+        const names = service.especialistas.map(id => (allData.especialistas.find(s => s.id.toUpperCase() === id.toUpperCase()) || {}).nombre).filter(Boolean).join(' • ');
         view.querySelector('#service-specialists-list').textContent = names ? `Con: ${names}`: '';
       }
       view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo(purchaseId ? `?view=book-package-session&purchaseId=${purchaseId}` : `?category=${encodeURIComponent(service.categoria)}`); });
@@ -141,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     view.prepend(document.getElementById('template-loading').content.cloneNode(true));
     try {
       await fetchAppData();
-      const pkg = allData.packages.find(p => p.id === packageId);
+      const pkg = allData.paquetes.find(p => p.id === packageId);
       if (!pkg) throw new Error('Paquete no encontrado.');
       view.querySelector('.loading-spinner')?.remove();
       view.querySelector('.view-title').textContent = pkg.nombre;
@@ -151,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const list = view.querySelector('.package-services-included ul');
       list.innerHTML = '';
       pkg.servicios.forEach(id => {
-        const service = allData.services.find(s => s.id === id);
+        const service = allData.servicios.find(s => s.id === id);
         const li = document.createElement('li');
         li.textContent = service ? service.nombre : `Servicio ${id} no encontrado`;
         list.appendChild(li);
@@ -230,7 +222,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function openBookingModal(serviceId, date, slotData, purchaseId = null, clientInfo = {}) {
-    const service = allData.services.find(s => s.id === serviceId);
+    const service = allData.servicios.find(s => s.id === serviceId);
     const modal = document.getElementById('booking-modal');
     modal.querySelector('.booking-form').style.display = 'block';
     modal.querySelector('#modal-message').style.display = 'none';
@@ -293,10 +285,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const payload = { action, serviceId, date: toISODateString(date), time: slotData.time, specialistId: slotData.specialistId, clientName, clientEmail, clientPhone, paymentStatus, purchaseId };
       
       try {
-        const res = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify(payload) });
+        const res = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
         const result = await res.json();
         if (result.status !== 'success') throw new Error(result.message);
-        if (result.updatedClientData) { sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedClientData })); }
+        if (result.updatedPackages) { sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedPackages })); }
         
         modal.querySelector('#modal-title').textContent = '¡Éxito!';
         modal.querySelector('.booking-form').style.display = 'none';
@@ -331,13 +323,13 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBtn.disabled = true; confirmBtn.textContent = 'Procesando...';
 
         try {
-            const res = await fetch(API_ENDPOINT, { method: 'POST', body: JSON.stringify({ action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone }) });
+            const res = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone }) });
             const result = await res.json();
             if (result.status !== 'success') throw new Error(result.message);
-            sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedClientData }));
+            sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedPackages }));
             
             form.style.display = 'none';
-            msg.textContent = "¡Gracias! Recibirás un correo con la confirmación. Serás redirigido al área de cliente.";
+            msg.textContent = "¡Gracias por tu compra! Serás redirigido al área de cliente.";
             msg.className = 'success-message'; msg.style.display = 'block';
             setTimeout(() => { modal.style.display = 'none'; navigateTo(`?view=my-packages`); }, 4000);
         } catch (error) {
@@ -346,43 +338,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
   }
-
-  async function renderClientLoginView() { /* ... */ }
-  async function renderClientPackagesView() { /* ... */ }
-  async function renderPackageServicesView(purchaseId) { /* ... */ }
-  // (Las funciones del área de cliente son extensas y se incluyen en el bloque de abajo)
-
-  function createCard(type, data) {
-    const card = document.createElement('a');
-    card.href = '#';
-    if (type === 'category') {
-      card.className = 'category-card';
-      card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}"><div class="category-card-title"><h3>${data.name}</h3></div>`;
-    } else {
-      card.className = 'service-card';
-      let price = data.precio > 0 ? `$${parseFloat(data.precio).toLocaleString('es-MX')} MXN` : 'Gratis';
-      let subtext = type === 'service' ? `${data.duracion} min` : 'Paquete';
-      card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${subtext} · ${price}</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
-    }
-    return card;
-  }
   
-  function getCategoryImage(categoryName) {
-    const images = {'Uñas':'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg','Pestañas':'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg','Masajes':'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg','Faciales':'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'};
-    return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael'
-  }
-  
-  function formatTime12h(time24h) {
-    if (!time24h) return '';
-    const [h, m] = time24h.split(':');
-    return new Date(1970, 0, 1, parseInt(h), parseInt(m)).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true });
-  }
-
-  function toISODateString(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
-  function navigateTo(path) { window.history.pushState({}, '', path); router(); }
-  function clearClientDataAndGoHome() { sessionStorage.removeItem('amorVaelClientData'); clientData = null; navigateTo('/'); }
-  
-  // --- LÓGICA COMPLETA DEL ÁREA DE CLIENTE ---
+  // =================================================================
+  // LÓGICA DEL ÁREA DE CLIENTE
+  // =================================================================
   async function renderClientLoginView() {
     const view = renderView('template-client-login-view');
     if (!view) return;
@@ -409,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!view) return;
     view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); clearClientDataAndGoHome(); });
     const listEl = view.querySelector('#client-package-list');
-    if (!clientData || clientData.packages.length === 0) {
+    if (!clientData || !clientData.packages || clientData.packages.length === 0) {
       listEl.innerHTML = '<p>No tienes paquetes activos. <a href="#" id="try-another">Intenta con otro correo</a>.</p>';
       listEl.querySelector('#try-another').addEventListener('click', (e) => { e.preventDefault(); navigateTo('?view=client-login'); });
       return;
@@ -446,22 +405,53 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const serviceCounts = remainingIds.reduce((acc, id) => { acc[id] = (acc[id] || 0) + 1; return acc; }, {});
       Object.keys(serviceCounts).forEach(serviceId => {
-        const service = allData.services.find(s => s.id === serviceId);
+        const service = allData.servicios.find(s => s.id === serviceId);
         if (service) {
           const card = createCard('service', service);
           const countEl = document.createElement('p');
           countEl.innerHTML = `(Restantes: <strong>${serviceCounts[serviceId]}</strong>)`;
           countEl.style.cssText = 'font-weight: 500; margin-top: -10px; margin-bottom: 10px; color: var(--secondary-color);';
           card.querySelector('.service-card-info').appendChild(countEl);
-          card.addEventListener('click', (e) => { e.preventDefault(); navigateTo(`?service=${service.id}&purchaseId=${purchaseId}`); });
+          card.addEventListener('click', (e) => { e.preventDefault(); openBookingModal(service.id, null, null, purchase.id, {name: purchase.nombreCliente, email: purchase.email, phone: purchase.telefono}); });
           list.appendChild(card);
         }
       });
     } catch (error) { list.innerHTML = `<p class="error-message">${error.message}</p>`; }
   }
+
+  // =================================================================
+  // FUNCIONES AUXILIARES Y DE INICIALIZACIÓN
+  // =================================================================
+  function createCard(type, data) {
+    const card = document.createElement('a');
+    card.href = '#';
+    if (type === 'category') {
+      card.className = 'category-card';
+      card.innerHTML = `<img src="${getCategoryImage(data.name)}" alt="${data.name}"><div class="category-card-title"><h3>${data.name}</h3></div>`;
+    } else {
+      card.className = 'service-card';
+      let price = data.precio > 0 ? `$${parseFloat(data.precio).toLocaleString('es-MX')} MXN` : 'Gratis';
+      let subtext = type === 'service' ? `${data.duracion} min` : 'Paquete';
+      card.innerHTML = `<div class="service-card-info"><h4>${data.nombre}</h4><p>${subtext} · ${price}</p></div><div class="service-card-arrow"><i class="ph-bold ph-caret-right"></i></div>`;
+    }
+    return card;
+  }
+  
+  function getCategoryImage(categoryName) {
+    const images = {'Uñas':'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg','Pestañas':'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg','Masajes':'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg','Faciales':'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'};
+    return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael'
+  }
+  
+  function formatTime12h(time24h) {
+    if (!time24h) return '';
+    const [h, m] = time24h.split(':');
+    return new Date(1970, 0, 1, parseInt(h), parseInt(m)).toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit', hour12: true });
+  }
+
+  function toISODateString(date) { return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0'); }
+  function navigateTo(path) { window.history.pushState({}, '', path); router(); }
+  function clearClientDataAndGoHome() { sessionStorage.removeItem('amorVaelClientData'); clientData = null; navigateTo('/'); }
   
   router();
   window.addEventListener('popstate', router);
 });
-
-
