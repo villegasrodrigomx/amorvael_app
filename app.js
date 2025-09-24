@@ -1,8 +1,6 @@
 /**
  * Motor de Citas Amor-Vael - app.js
- * Versión 5.0 Estable y Completa
- * Fecha: 24 de Septiembre, 2025
- * Descripción: Frontend completo, robusto y con todas las mejoras de UI/UX implementadas.
+ * Versión 6.0 (Ajustes de UI en Vista de Detalle)
  */
 document.addEventListener('DOMContentLoaded', () => {
     // =================================================================
@@ -78,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const paquetes = allData.paquetes || [];
             const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))]
                 .filter(Boolean)
-                .filter(cat => cat.toLowerCase() !== 'paquetes'); // Excluir categoría 'Paquetes'
+                .filter(cat => cat.toLowerCase() !== 'paquetes');
 
             categoryGrid.innerHTML = '';
             if (categories.length === 0) {
@@ -107,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
             await fetchAppData();
             const servicios = (allData.servicios || []).filter(s => s.categoria === decodedCategory).map(s => ({ ...s, type: 'service' }));
             const paquetes = (allData.paquetes || []).filter(p => p.categoria === decodedCategory).map(p => ({ ...p, type: 'package' }));
-            const items = [...servicios, ...paquetes]; // Orden: servicios primero, luego paquetes
+            const items = [...servicios, ...paquetes];
 
             listContainer.innerHTML = '';
             if (items.length === 0) {
@@ -137,7 +135,8 @@ document.addEventListener('DOMContentLoaded', () => {
             view.querySelector('.view-title').textContent = service.nombre;
             if (service.especialistas && allData.especialistas) {
                 const names = service.especialistas.map(id => (allData.especialistas.find(s => s.id.toUpperCase() === id.toUpperCase()) || {}).nombre).filter(Boolean).join(' • ');
-                view.querySelector('#service-specialists-list').textContent = names ? `Con: ${names}` : '';
+                // --- ¡CAMBIO REALIZADO AQUÍ! ---
+                view.querySelector('#service-specialists-list').textContent = names ? `by: ${names}` : '';
             }
             view.querySelector('.back-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo(purchaseId ? `?view=book-package-session&purchaseId=${purchaseId}` : `?category=${encodeURIComponent(service.categoria)}`); });
             view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(service.categoria);
