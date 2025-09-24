@@ -169,6 +169,16 @@
                         <input type="tel" id="clientPhone">
                     </div>
                 </div>
+                
+                <div id="discount-section" class="form-group" style="display: none;">
+                    <label for="discount-code">Código de Descuento:</label>
+                    <div class="discount-input-group">
+                        <input type="text" id="discount-code" placeholder="Escribe tu código">
+                        <button id="apply-discount-btn">Aplicar</button>
+                    </div>
+                    <div id="discount-message"></div>
+                </div>
+
                 <div id="payment-options-section" class="form-group" style="display: none;">
                     <label>¿Cómo te gustaría pagar?</label>
                     <div class="payment-options">
@@ -177,6 +187,7 @@
                         <label><input type="radio" name="payment-method" value="cash"> Pagar en el spa</label>
                     </div>
                 </div>
+
                 <div id="transfer-details" style="display: none;">
                     <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp:</p>
                     <p><strong>Banco:</strong> NU México<br>
@@ -184,10 +195,12 @@
                        <strong>CLABE:</strong> 638180010101648038<br>
                        <strong>Titular:</strong> Ana Paula Ortiz Morales</p>
                 </div>
+
                 <div id="payment-section" style="display: none;">
                     <label>Datos de la tarjeta:</label>
                     <div id="payment-element" class="StripeElement"></div>
                 </div>
+
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
                 <div id="modal-message" style="display: none;"></div>
             </div>
@@ -197,3 +210,4 @@
     <script src="app.js"></script>
 </body>
 </html>
+
