@@ -1,11 +1,14 @@
 /**
  * Motor de Citas Amor-Vael - app.js
- * Versión Final Estable: 2.0
- * Fecha: 24 de Septiembre, 2025
- * Descripción: Frontend completo que consume datos del backend de Apps Script.
- * Esta versión utiliza claves de datos consistentes en español.
+ * Versión 4.0 (Mejoras de UI y Ordenamiento)
  */
 document.addEventListener('DOMContentLoaded', () => {
+  const appContainer = document.getElementById('app-container');
+  let allData = null;
+  let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+  const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzlZJ0mTAUDaE_c9_oTCvSFrwTG6DC4sWRv8NtbMw1yxXx2NeP3FmvRK5hIN81_R7QdTQ/exec';
+
+    document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
   let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
@@ -33,26 +36,8 @@ document.addEventListener('DOMContentLoaded', () => {
     else renderCategoriesView();
   }
 
-  function renderView(templateId) {
-    const template = document.getElementById(templateId);
-    if (!template) { appContainer.innerHTML = `<p class="error-message">Error: Vista no encontrada.</p>`; return null; }
-    appContainer.innerHTML = '';
-    appContainer.appendChild(template.content.cloneNode(true));
-    return appContainer.querySelector('.view');
-  }
-
-  async function fetchAppData() {
-    if (allData) return allData;
-    try {
-      const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
-      if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
-      const data = await response.json();
-      if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos.');
-      allData = data;
-      return allData;
-    } catch (error) { console.error("Fetch App Data Error:", error); throw error; }
-  }
-
+// --- LÓGICA DE VISTAS (CON CAMBIOS) ---
+  
   async function renderCategoriesView() {
     const view = renderView('template-categories-view');
     if (!view) return;
@@ -63,10 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetchAppData();
       const servicios = allData.servicios || [];
       const paquetes = allData.paquetes || [];
-      const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))].filter(Boolean);
+      
+      // MEJORA 1: Excluimos la categoría "Paquetes"
+      const categories = [...new Set([...servicios, ...paquetes].map(item => item.categoria))]
+          .filter(Boolean)
+          .filter(cat => cat.toLowerCase() !== 'paquetes'); 
+      
       categoryGrid.innerHTML = '';
       if (categories.length === 0) {
-        categoryGrid.innerHTML = '<p>No se encontraron categorías. Revisa que las pestañas "Servicios" y "Paquetes" tengan datos y la columna "Categoria".</p>';
+        categoryGrid.innerHTML = '<p>No se encontraron categorías.</p>';
         return;
       }
       categories.forEach(name => {
@@ -89,7 +79,10 @@ document.addEventListener('DOMContentLoaded', () => {
       await fetchAppData();
       const servicios = (allData.servicios || []).filter(s => s.categoria === decodedCategory).map(s => ({ ...s, type: 'service' }));
       const paquetes = (allData.paquetes || []).filter(p => p.categoria === decodedCategory).map(p => ({ ...p, type: 'package' }));
-      const items = [...paquetes, ...servicios];
+      
+      // MEJORA 3: Mostramos servicios primero, luego paquetes.
+      const items = [...servicios, ...paquetes]; 
+      
       listContainer.innerHTML = '';
       if (items.length === 0) { listContainer.innerHTML = '<p>No hay elementos en esta categoría.</p>'; return; }
       items.forEach(item => {
@@ -99,7 +92,27 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     } catch (error) { listContainer.innerHTML = `<p class="error-message">Error: ${error.message}</p>`; }
   }
+  
+  function renderView(templateId) {
+    const template = document.getElementById(templateId);
+    if (!template) { appContainer.innerHTML = `<p class="error-message">Error: Vista no encontrada.</p>`; return null; }
+    appContainer.innerHTML = '';
+    appContainer.appendChild(template.content.cloneNode(true));
+    return appContainer.querySelector('.view');
+  }
 
+  async function fetchAppData() {
+    if (allData) return allData;
+    try {
+      const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
+      if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
+      const data = await response.json();
+      if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos.');
+      allData = data;
+      return allData;
+    } catch (error) { console.error("Fetch App Data Error:", error); throw error; }
+  }
+  
   async function renderServiceDetailView(serviceId, purchaseId = null) {
     const view = renderView('template-service-detail-view');
     if (!view) return;
@@ -455,3 +468,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
