@@ -3,23 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AMOR-VAEL Beauty spa, nails & lashes</title>
+    <title>AMOR-VAEL Beauty SPA, nails & lashes</title>
+
     <link rel="stylesheet" href="style.css">
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
+
     <header class="main-header">
         <a href="#" onclick="window.location.href=window.location.pathname; return false;">
-            <h1>AMOR-VAEL Beauty spa, nails & lashes</h1>
+            <h1>AMOR-VAEL Beauty SPA, nails & lashes</h1>
         </a>
     </header>
+
     <main id="app-container" class="container"></main>
 
-    <template id="template-loading"><div class="loading-spinner"></div></template>
+    <template id="template-loading">
+        <div class="loading-spinner"></div>
+    </template>
 
     <template id="template-categories-view">
         <div class="view">
-            <div id="client-area-entry"><a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda aquí <i class="ph-bold ph-arrow-right"></i></a></div>
+            <div id="client-area-entry">
+                <a href="#" class="client-area-link">¿Ya tienes un paquete? Agenda aquí <i class="ph-bold ph-arrow-right"></i></a>
+            </div>
             <h2>Nuestros Servicios</h2>
             <div class="category-grid"></div>
         </div>
@@ -156,5 +164,6 @@
     </div>
 
     <script src="app.js"></script>
+
 </body>
 </html>
