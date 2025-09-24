@@ -199,14 +199,16 @@ document.addEventListener('DOMContentLoaded', () => {
     modal.style.display = 'flex';
     modal.querySelector('#close-modal').onclick = () => modal.style.display = 'none';
     
+    const confirmBtn = document.getElementById('confirm-booking-btn');
     confirmBtn.onclick = async () => {
       const clientName = modal.querySelector('#clientName').value.trim();
       const clientEmail = modal.querySelector('#clientEmail').value.trim();
-      // REQUERIMIENTO 4: El teléfono es opcional, se lee pero no se valida si está vacío.
+      // REQUERIMIENTO: El teléfono es OBLIGATORIO
       const clientPhone = modal.querySelector('#clientPhone').value.trim();
 
-      if (!clientName || !clientEmail) {
-        alert('Por favor, completa al menos tu nombre y correo electrónico.');
+      // La validación ahora incluye el teléfono.
+      if (!clientName || !clientEmail || !clientPhone) {
+        alert('Por favor, completa todos los campos: nombre, correo y celular.');
         return;
       }
       if (!/\S+@\S+\.\S+/.test(clientEmail)) {
@@ -217,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Procesando...';
       
-      let paymentStatus = 'Cortesía'; // Valor por defecto para servicios gratuitos
+      let paymentStatus = 'Cortesía';
       if (service.precio > 0) {
         const method = modal.querySelector('input[name="payment-method"]:checked').value;
         paymentStatus = method === 'transfer' ? 'Pendiente de transferencia' : 'Pago en sitio';
@@ -553,3 +555,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
