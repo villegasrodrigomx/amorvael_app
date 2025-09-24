@@ -1,25 +1,16 @@
-/**
- * Motor de Citas Amor-Vael - app.js v22.1 (Producción Final Corregida)
- * - CORRECCIÓN: Muestra correctamente los nombres de las especialistas en la vista de detalle.
- * - CORRECCIÓN: La lógica del calendario ahora bloquea correctamente el día actual.
- * - CORRECCIÓN: Se añade una validación en `createCard` para evitar el error `toLocaleString` en paquetes sin precio definido.
- * - CORRECCIÓN: Se deshabilita el pago con tarjeta y se hace obligatorio el campo de celular.
- */
+// APP.JS - VERSIÓN CORREGIDA Y CON REGLAS DE NEGOCIO IMPLEMENTADAS
 
 document.addEventListener('DOMContentLoaded', () => {
   const appContainer = document.getElementById('app-container');
   let allData = null;
-  let clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
   
   // --- CONFIGURACIÓN ---
-  // Reemplaza con la URL de tu script de Google Apps Script desplegado
-  const API_ENDPOINT = 'URL_DE_TU_APPS_SCRIPT_FINAL_AQUI'; 
-  // Reemplaza con tu clave PUBLICABLE de Stripe (la que empieza con pk_test_ o pk_live_)
-  const stripe = Stripe('TU_CLAVE_PUBLICABLE_DE_STRIPE_AQUI');
+  const API_ENDPOINT = '/.netlify/functions/engine';
+  const stripe = Stripe('pk_test_51RykGMA68QYOf35CXVLHnoL1IZeWbtC2Fn72tPNSP8sNLLAAW9zUgtNJZxsaujFACiPE49JXfLOhcMtJkbWM1FyI005rXaLSb5');
 
-  // --- ROUTER Y FUNCIONES DE RENDERIZADO (Sin cambios) ---
+  // --- ROUTER ---
   function router() {
-    clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
+      clientData = JSON.parse(sessionStorage.getItem('amorVaelClientData')) || null;
     const params = new URLSearchParams(window.location.search);
     const view = params.get('view');
     const category = params.get('category');
@@ -37,118 +28,38 @@ document.addEventListener('DOMContentLoaded', () => {
     else renderCategoriesView();
   }
 
-  function renderView(templateId) {
-    const template = document.getElementById(templateId);
-    if (!template) {
-      appContainer.innerHTML = `<p class="error-message">Error: La vista no existe.</p>`;
-      return null;
-    }
-    appContainer.innerHTML = '';
-    const viewContent = template.content.cloneNode(true);
-    appContainer.appendChild(viewContent);
-    return appContainer.querySelector('.view');
-  }
-
+  // --- OBTENCIÓN DE DATOS ---
   async function fetchAppData() {
+    if (allData) return allData;
     const response = await fetch(`${API_ENDPOINT}?action=getAppData`);
     if (!response.ok) throw new Error('No se pudo conectar con el servidor.');
     const data = await response.json();
-    if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos.');
-    return data;
+    if (data.status !== 'success') throw new Error(data.message || 'Error al cargar datos iniciales.');
+    allData = data;
+    return allData;
   }
   
-  async function renderCategoriesView() {
-    const view = renderView('template-categories-view');
-    if (!view) return;
-    view.querySelector('.client-area-link').addEventListener('click', (e) => {
-      e.preventDefault();
-      navigateTo('?view=client-login');
-    });
-    const categoryGrid = view.querySelector('.category-grid');
-    categoryGrid.innerHTML = ''; 
-    categoryGrid.appendChild(document.getElementById('template-loading').content.cloneNode(true));
-    try {
-      if (!allData) allData = await fetchAppData();
-      const categories = [...new Set(allData.services.map(s => s.categoria))];
-      categoryGrid.innerHTML = '';
-      categories.forEach(categoryName => {
-        const card = createCard('category', { name: categoryName });
-        card.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateTo(`?category=${encodeURIComponent(categoryName)}`);
-        });
-        categoryGrid.appendChild(card);
-      });
-      if (allData.packages && allData.packages.length > 0) {
-        const packageCard = createCard('package');
-        packageCard.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateTo('?view=packages');
-        });
-        categoryGrid.appendChild(packageCard);
-      }
-    } catch (error) {
-      categoryGrid.innerHTML = `<p class="error-message">Error al cargar las categorías: ${error.message}</p>`;
-    }
-  }
-
-  async function renderServicesView(categoryName) {
-    const view = renderView('template-services-view');
-    if (!view) return;
-    view.querySelector('.view-title').textContent = decodeURIComponent(categoryName);
-    view.querySelector('.back-link').addEventListener('click', (e) => {
-      e.preventDefault();
-      navigateTo('/');
-    });
-    const serviceList = view.querySelector('.service-list');
-    serviceList.innerHTML = '';
-    try {
-      if (!allData) allData = await fetchAppData();
-      const servicesInCategory = allData.services.filter(s => s.categoria === decodeURIComponent(categoryName));
-      servicesInCategory.forEach(service => {
-        const serviceCard = createCard('service', service);
-        serviceCard.addEventListener('click', (e) => {
-          e.preventDefault();
-          navigateTo(`?service=${service.id}`);
-        });
-        serviceList.appendChild(serviceCard);
-      });
-    } catch (error) {
-      serviceList.innerHTML = `<p class="error-message">Error al cargar servicios: ${error.message}</p>`;
-    }
-  }
-
-  // --- VISTA DE SERVICIOS (CORREGIDA) ---
   async function renderServiceDetailView(serviceId, purchaseId = null) {
     const view = renderView('template-service-detail-view');
     if (!view) return;
     view.prepend(document.getElementById('template-loading').content.cloneNode(true));
     try {
-      if (!allData) allData = await fetchAppData();
+      await fetchAppData();
       const service = allData.services.find(s => s.id === serviceId);
       if (!service) throw new Error('Servicio no encontrado.');
       
       view.querySelector('.loading-spinner')?.remove();
       view.querySelector('.view-title').textContent = service.nombre;
-
-      // CORRECCIÓN: Lógica para buscar y mostrar nombres de especialistas
       if (service.especialistas && allData.specialists) {
-        const specialistNames = service.especialistas.map(specId => {
-          const spec = allData.specialists.find(s => s.id.toUpperCase() === specId.toUpperCase());
-          return spec ? spec.nombre : null;
-        }).filter(Boolean).join(' • ');
-        view.querySelector('#service-specialists-list').textContent = `Con: ${specialistNames}`;
-      } else {
-        view.querySelector('#service-specialists-list').textContent = '';
+        const specialistNames = service.especialistas.map(specId => allData.specialists.find(s => s.id.toUpperCase() === specId.toUpperCase())?.nombre).filter(Boolean).join(' • ');
+        view.querySelector('#service-specialists-list').textContent = specialistNames ? `Con: ${specialistNames}`: '';
       }
-
       view.querySelector('.back-link').addEventListener('click', (e) => {
         e.preventDefault();
-        if (purchaseId) navigateTo(`?view=book-package-session&purchaseId=${purchaseId}`);
-        else navigateTo(`?category=${encodeURIComponent(service.categoria)}`);
+        navigateTo(purchaseId ? `?view=book-package-session&purchaseId=${purchaseId}` : `?category=${encodeURIComponent(service.categoria)}`);
       });
       view.querySelector('.service-main-image').src = service.imagenUrl || getCategoryImage(service.categoria);
-      view.querySelector('.service-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
+      view.querySelector('.service-price').textContent = service.precio > 0 ? `$${service.precio.toLocaleString('es-MX')} MXN` : 'Cortesía / Evaluación';
       view.querySelector('.service-duration').textContent = `Duración: ${service.duracion} minutos`;
       view.querySelector('.service-description').textContent = service.descripcion || '';
       
@@ -156,23 +67,22 @@ document.addEventListener('DOMContentLoaded', () => {
       showCalendarBtn.addEventListener('click', () => {
         view.querySelector('.booking-section').style.display = 'block';
         showCalendarBtn.style.display = 'none';
-        initializeCalendar(serviceId, view, purchaseId);
+        initializeCalendar(service.id, view);
       });
     } catch (error) {
-      view.innerHTML = `<p class="error-message">Error: ${error.message}</p>`;
+      appContainer.innerHTML = `<p class="error-message">Error: ${error.message}</p><a href="#" onclick="navigateTo('/'); return false;">Volver</a>`;
     }
   }
 
-  function initializeCalendar(serviceId, view, purchaseId) {
+  // --- LÓGICA DE CALENDARIO Y RESERVA ---
+  function initializeCalendar(serviceId, view) {
     const monthYearEl = view.querySelector('#monthYear');
     const calendarDaysEl = view.querySelector('#calendarDays');
-    const prevMonthBtn = view.querySelector('#prevMonth');
-    const nextMonthBtn = view.querySelector('#nextMonth');
     let currentDate = new Date();
-    let hoyOficial = '';
+    let serverToday = '';
 
-    async function renderCalendar() {
-      monthYearEl.textContent = currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
+  async function renderCalendar() {
+    monthYearEl.textContent = currentDate.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' });
       calendarDaysEl.innerHTML = '';
       const month = currentDate.getMonth(), year = currentDate.getFullYear();
       const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -198,8 +108,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    async function fetchAndDisplaySlots(serviceId, date, purchaseId) {
-      const slotsContainer = view.querySelector('.slots-container');
+    async function fetchAndDisplaySlots(serviceId, date) {
+    const slotsContainer = view.querySelector('.slots-container');
       const slotsEl = view.querySelector('#availableSlots');
       slotsContainer.style.display = 'block';
       slotsEl.innerHTML = '';
@@ -225,180 +135,142 @@ document.addEventListener('DOMContentLoaded', () => {
         slotsEl.innerHTML = '<p class="error-message">Error al cargar disponibilidad.</p>';
       }
     }
-
+    
     async function setupCalendar() {
         try {
             const url = `${API_ENDPOINT}?action=getAvailableSlots&serviceId=${serviceId}&date=check`;
             const response = await fetch(url);
+            if (!response.ok) throw new Error(`El servidor respondió con el estado ${response.status}`);
             const data = await response.json();
-            if (data.hoy) {
-                hoyOficial = data.hoy;
+            if (data.serverDate) {
+                serverToday = data.serverDate;
                 renderCalendar();
-            } else { throw new Error('Respuesta inválida del servidor'); }
+            } else { throw new Error('Respuesta inválida del servidor.'); }
         } catch (e) {
-            calendarDaysEl.innerHTML = `<p class="error-message">No se pudo inicializar el calendario.</p>`;
+            calendarDaysEl.innerHTML = `<p class="error-message">No se pudo inicializar el calendario: ${e.message}</p>`;
         }
     }
     
-    prevMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
-    nextMonthBtn.onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
+    view.querySelector('#prevMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() - 1); renderCalendar(); };
+    view.querySelector('#nextMonth').onclick = () => { currentDate.setMonth(currentDate.getMonth() + 1); renderCalendar(); };
     
     setupCalendar();
   }
 
-  // --- MODAL DE RESERVA (CORREGIDO) ---
-  async function openBookingModal(serviceId, date, slotData, purchaseId) {
-    if (purchaseId && !clientData) {
-      alert("Tu sesión ha expirado.");
-      return navigateTo('?view=client-login');
-    }
-  
+  async function openBookingModal(serviceId, date, slotData) {
     const service = allData.services.find(s => s.id === serviceId);
     const modal = document.getElementById('booking-modal');
-    const confirmBtn = document.getElementById('confirm-booking-btn');
-    const clientInputs = modal.querySelector('.client-inputs');
-    const paymentOptions = modal.querySelector('#payment-options-section');
-    const paymentSection = modal.querySelector('#payment-section');
-    const transferDetails = modal.querySelector('#transfer-details');
-    const discountSection = modal.querySelector('#discount-section');
-
-    // Reset
-    clientInputs.style.display = 'block';
-    confirmBtn.style.display = 'block';
-    confirmBtn.disabled = false;
-    modal.querySelector('.booking-form').style.display = 'block';
-    modal.querySelector('#modal-message').style.display = 'none';
-    document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
-    discountSection.style.display = 'none';
     
-    // Populate
+    const form = modal.querySelector('.booking-form');
+    form.style.display = 'block';
+    modal.querySelector('#modal-message').style.display = 'none';
+    const confirmBtn = document.getElementById('confirm-booking-btn');
+    confirmBtn.disabled = false;
+    
+    document.getElementById('modal-title').textContent = 'Revisa y Confirma tu Cita';
     modal.querySelector('#modal-service-name').textContent = service.nombre;
     modal.querySelector('#modal-date').textContent = date.toLocaleDateString('es-MX', { dateStyle: 'long' });
     modal.querySelector('#modal-time').textContent = formatTime12h(slotData.time);
     modal.querySelector('#modal-specialist-name').textContent = slotData.specialistName;
     
-    const clientNameInput = modal.querySelector('#clientName');
-    const clientEmailInput = modal.querySelector('#clientEmail');
-    const clientPhoneInput = modal.querySelector('#clientPhone');
+    const paymentOptions = modal.querySelector('#payment-options-section');
+    const transferDetails = modal.querySelector('#transfer-details');
 
-    if (purchaseId) {
-      confirmBtn.textContent = 'Confirmar Sesión';
-      modal.querySelector('#modal-price').textContent = 'Incluido en tu paquete';
-      paymentOptions.style.display = 'none';
-      paymentSection.style.display = 'none';
-      transferDetails.style.display = 'none';
-      const purchase = clientData.packages.find(p => p.id === purchaseId);
-      clientNameInput.value = purchase.nombreCliente;
-      clientEmailInput.value = purchase.email;
-      clientPhoneInput.value = purchase.telefono || '';
-    } else {
+    if (service.precio > 0) {
       modal.querySelector('#modal-price').textContent = `$${service.precio.toLocaleString('es-MX')} MXN`;
-      clientNameInput.value = '';
-      clientEmailInput.value = '';
-      clientPhoneInput.value = '';
+      paymentOptions.style.display = 'block';
+      confirmBtn.textContent = 'Confirmar Cita';
       
-      if (service.precio > 0) {
-        paymentOptions.style.display = 'block';
-        const radioCard = modal.querySelector('input[value="card"]');
-        const radioTransfer = modal.querySelector('input[value="transfer"]');
-        if(radioCard) {
-            radioCard.parentElement.style.display = 'none'; // Ocultamos la opción de tarjeta
-            radioTransfer.checked = true; // Seleccionamos transferencia por defecto
-        }
-        const updatePaymentView = () => {
-          const method = modal.querySelector('input[name="payment-method"]:checked').value;
-          paymentSection.style.display = 'none'; // Pago con tarjeta deshabilitado
-          transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
-          confirmBtn.textContent = 'Confirmar Cita';
-        };
-        modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
-        updatePaymentView();
-      } else {
-        paymentOptions.style.display = 'none';
-        paymentSection.style.display = 'none';
-        transferDetails.style.display = 'none';
-        confirmBtn.textContent = 'Confirmar Cita';
-      }
+      const updatePaymentView = () => {
+        const method = modal.querySelector('input[name="payment-method"]:checked')?.value;
+        transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
+      };
+      modal.querySelectorAll('input[name="payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
+      modal.querySelector('input[value="transfer"]').checked = true;
+      updatePaymentView();
+
+    } else { // Si el servicio es gratuito
+      modal.querySelector('#modal-price').textContent = 'Cortesía / Sin costo';
+      paymentOptions.style.display = 'none';
+      transferDetails.style.display = 'none';
+      confirmBtn.textContent = 'Confirmar Cita de Cortesía';
     }
     
     modal.style.display = 'flex';
     modal.querySelector('#close-modal').onclick = () => modal.style.display = 'none';
     
     confirmBtn.onclick = async () => {
-      const clientName = clientNameInput.value;
-      const clientEmail = clientEmailInput.value;
-      const clientPhone = clientPhoneInput.value;
+      const clientName = modal.querySelector('#clientName').value.trim();
+      const clientEmail = modal.querySelector('#clientEmail').value.trim();
+      // REQUERIMIENTO 4: El teléfono es opcional, se lee pero no se valida si está vacío.
+      const clientPhone = modal.querySelector('#clientPhone').value.trim();
 
-      // CORRECCIÓN: Se añade validación para el teléfono
-      if (!clientName || !clientEmail || !clientPhone) {
-        return alert('Por favor, completa todos los campos: nombre, correo y celular.');
+      if (!clientName || !clientEmail) {
+        alert('Por favor, completa al menos tu nombre y correo electrónico.');
+        return;
+      }
+      if (!/\S+@\S+\.\S+/.test(clientEmail)) {
+        alert('Por favor, introduce un correo electrónico válido.');
+        return;
       }
       
       confirmBtn.disabled = true;
       confirmBtn.textContent = 'Procesando...';
       
-      if (purchaseId) {
-        await createBookingOnServer(serviceId, date, slotData, purchaseId);
-      } else if (service.precio === 0) {
-        await createBookingOnServer(serviceId, date, slotData, null, 'Cortesía');
-      } else {
+      let paymentStatus = 'Cortesía'; // Valor por defecto para servicios gratuitos
+      if (service.precio > 0) {
         const method = modal.querySelector('input[name="payment-method"]:checked').value;
-        const status = method === 'transfer' ? 'Pendiente de transferencia' : 'Pago en sitio';
-        await createBookingOnServer(serviceId, date, slotData, null, status);
+        paymentStatus = method === 'transfer' ? 'Pendiente de transferencia' : 'Pago en sitio';
       }
+      
+      await createBookingOnServer(serviceId, date, slotData, { clientName, clientEmail, clientPhone, paymentStatus });
     };
   }
 
-  async function createBookingOnServer(serviceId, date, slotData, purchaseId, paymentStatus) {
+  async function createBookingOnServer(serviceId, date, slotData, bookingDetails) {
     const modal = document.getElementById('booking-modal');
     const confirmBtn = document.getElementById('confirm-booking-btn');
-    const formContainer = modal.querySelector('.booking-form');
     
-    let bookingData = {
-      action: purchaseId ? 'bookPackageSession' : 'createBooking',
-      serviceId, date: toISODateString(date), time: slotData.time,
+    const payload = {
+      action: 'createBooking',
+      serviceId,
+      date: toISODateString(date),
+      time: slotData.time,
       specialistId: slotData.specialistId,
-      clientName: modal.querySelector('#clientName').value,
-      clientEmail: modal.querySelector('#clientEmail').value,
-      clientPhone: modal.querySelector('#clientPhone').value,
+      ...bookingDetails
     };
-    if (purchaseId) {
-        bookingData.paymentStatus = 'Incluido en paquete';
-    } else {
-        bookingData.paymentStatus = paymentStatus;
-    }
     
     try {
       const res = await fetch(API_ENDPOINT, {
         method: 'POST',
-        body: JSON.stringify(bookingData)
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
       });
       const result = await res.json();
       if (result.status !== 'success') throw new Error(result.message);
 
       modal.querySelector('#modal-title').textContent = '¡Cita Confirmada!';
-      formContainer.style.display = 'none';
-      modal.querySelector('#modal-message').textContent = result.message;
-      modal.querySelector('#modal-message').className = 'success';
-      modal.querySelector('#modal-message').style.display = 'block';
+      modal.querySelector('.booking-form').style.display = 'none';
+      const messageEl = modal.querySelector('#modal-message');
+      messageEl.textContent = result.message;
+      messageEl.className = 'success-message';
+      messageEl.style.display = 'block';
 
-      const closeModalBtn = document.getElementById('close-modal');
-      closeModalBtn.onclick = () => {
+      setTimeout(() => {
         modal.style.display = 'none';
         navigateTo('/');
-      };
+      }, 4000);
 
     } catch (error) {
-      modal.querySelector('#modal-message').textContent = `Error al agendar: ${error.message}`;
-      modal.querySelector('#modal-message').className = 'error';
-      modal.querySelector('#modal-message').style.display = 'block';
-      confirmBtn.style.display = 'block';
+      const messageEl = modal.querySelector('#modal-message');
+      messageEl.textContent = `Error al agendar: ${error.message}`;
+      messageEl.className = 'error-message';
+      messageEl.style.display = 'block';
       confirmBtn.disabled = false;
       confirmBtn.textContent = "Intentar de Nuevo";
     }
   }
-  
-  // --- FUNCIONES AUXILIARES ---
+
   function createCard(type, data) {
     const card = document.createElement('a');
     card.href = '#';
@@ -421,12 +293,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getCategoryImage(categoryName) {
     const images = {
-      'Uñas': 'https://images.unsplash.com/photo-1604902396837-786d70817458?auto=format&fit=crop&q=80&w=1000',
-      'Pestañas': 'https://images.unsplash.com/photo-1599387823531-c0353c84e1b5?auto=format&fit=crop&q=80&w=1000',
-      'Masajes': 'https://images.unsplash.com/photo-1598233822764-33d479a61353?auto=format&fit=crop&q=80&w=1000',
-      'Faciales': 'https://images.unsplash.com/photo-1598603659421-4b1100b73b18?auto=format&fit=crop&q=80&w=1000'
+      'Uñas': 'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg',
+      'Pestañas': 'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg',
+      'Masajes': 'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg',
+      'Faciales': 'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'
     };
-    return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
+    return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael'
   }
   
   function formatTime12h(time24h) {
@@ -677,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
+  // --- INICIALIZACIÓN ---
   router();
   window.addEventListener('popstate', router);
 });
