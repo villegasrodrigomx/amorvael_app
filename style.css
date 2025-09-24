@@ -166,7 +166,7 @@ body {
 }
 
 .service-gallery {
-  width: 40%; /* La imagen ocupa el 90% del contenedor */
+  width: 30%; /* La imagen ocupa el 90% del contenedor */
   max-width: 500px; /* Un máximo para que no sea gigante en pantallas grandes */
   margin-top: 20px;
   border-radius: 8px;
@@ -437,4 +437,5 @@ body {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
 
