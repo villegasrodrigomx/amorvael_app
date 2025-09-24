@@ -51,15 +51,29 @@ document.addEventListener('DOMContentLoaded', () => {
     categoryGrid.innerHTML = `<div class="loading-spinner"></div>`;
     try {
       await fetchAppData();
-      const categories = [...new Set([...allData.services, ...allData.packages].map(item => item.categoria))].filter(Boolean);
+      
+      // La corrección está aquí: (allData.services || [])
+      // Si allData.services no existe, usa un arreglo vacío [] en su lugar.
+      const services = allData.services || [];
+      const packages = allData.packages || [];
+
+      const categories = [...new Set([...services, ...packages].map(item => item.categoria))].filter(Boolean);
+      
       categoryGrid.innerHTML = '';
+      if (categories.length === 0) {
+        categoryGrid.innerHTML = '<p>No se encontraron categorías. Revisa que las pestañas "Servicios" y "Paquetes" existan en tu Google Sheet.</p>';
+        return;
+      }
+
       categories.forEach(name => {
         const card = createCard('category', { name });
         card.addEventListener('click', (e) => { e.preventDefault(); navigateTo(`?category=${encodeURIComponent(name)}`); });
         categoryGrid.appendChild(card);
       });
-    } catch (error) { categoryGrid.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`; }
-  }
+    } catch (error) { 
+        categoryGrid.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`; 
+    }
+}
 
   async function renderServicesView(categoryName) {
     const view = renderView('template-services-view');
@@ -439,3 +453,4 @@ document.addEventListener('DOMContentLoaded', () => {
   router();
   window.addEventListener('popstate', router);
 });
+
