@@ -1,6 +1,6 @@
 /**
  * Motor de Citas Amor-Vael - app.js
- * Versión 6.0 (Ajustes de UI en Vista de Detalle)
+ * Versión Final 8.0 (Estable)
  */
 document.addEventListener('DOMContentLoaded', () => {
     const appContainer = document.getElementById('app-container');
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function renderCategoriesView() {
         const view = renderView('template-categories-view');
-        if (!view) return;
+        if (!view) return; // Esta línea previene el error 'querySelector' of null
         view.querySelector('.client-area-link').addEventListener('click', (e) => { e.preventDefault(); navigateTo('?view=client-login'); });
         const categoryGrid = view.querySelector('.category-grid');
         categoryGrid.innerHTML = `<div class="loading-spinner"></div>`;
@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             categoryGrid.innerHTML = `<p class="error-message">Error al cargar: ${error.message}</p>`;
         }
     }
-
+    
     async function renderServicesView(categoryName) {
         const view = renderView('template-services-view');
         if (!view) return;
@@ -547,4 +547,5 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
     window.addEventListener('popstate', router);
 });
+
 
