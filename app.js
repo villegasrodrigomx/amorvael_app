@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 finalPrice = parseFloat(result.newPrice);
                 appliedCode = code;
                 modal.querySelector('#modal-price').innerHTML = `<s>$${service.precio.toLocaleString('es-MX')}</s> <span class="new-price">$${finalPrice.toLocaleString('es-MX')} MXN</span>`;
-                discountMsg.textContent = '¡Código aplicado con éxito!';
+                discountMsg.textContent = `¡Descuento de $${discountAmount} aplicado!`;
                 discountMsg.className = 'success-message';
             } catch (error) {
                 discountMsg.textContent = error.message;
@@ -620,3 +620,4 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
     window.addEventListener('popstate', router);
 });
+
