@@ -346,14 +346,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function openPurchaseModal(pkg) {
         const modal = document.getElementById('purchase-modal');
-        modal.querySelector('#purchase-modal-title').textContent = `Comprar: ${pkg.nombre}`;
+        modal.querySelector('#purchase-modal-title').textContent = `Comprar Paquete: ${pkg.nombre}`;
+        modal.querySelector('#purchase-modal-price').textContent = `$${pkg.precio.toLocaleString('es-MX')} MXN`;
+
         const form = modal.querySelector('.purchase-form');
+        const msgEl = modal.querySelector('#purchase-modal-message');
         form.style.display = 'block';
-        const msg = modal.querySelector('#purchase-modal-message');
-        msg.style.display = 'none';
+        msgEl.style.display = 'none';
+
         const confirmBtn = modal.querySelector('#confirm-purchase-btn');
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmar Compra';
+        
+        // Lógica para mostrar/ocultar detalles de transferencia
+        const transferDetails = modal.querySelector('#purchase-transfer-details');
+        const updatePaymentView = () => {
+            const method = modal.querySelector('input[name="purchase-payment-method"]:checked')?.value;
+            transferDetails.style.display = method === 'transfer' ? 'block' : 'none';
+        };
+        modal.querySelectorAll('input[name="purchase-payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
+        modal.querySelector('input[value="transfer"]').checked = true;
+        updatePaymentView();
+
         modal.style.display = 'flex';
         modal.querySelector('#close-purchase-modal').onclick = () => modal.style.display = 'none';
 
@@ -361,27 +375,53 @@ document.addEventListener('DOMContentLoaded', () => {
             const clientName = modal.querySelector('#purchase-clientName').value.trim();
             const clientEmail = modal.querySelector('#purchase-clientEmail').value.trim().toLowerCase();
             const clientPhone = modal.querySelector('#purchase-clientPhone').value.trim();
-            if (!clientName || !clientEmail || !clientPhone) { alert('Todos los campos son requeridos.'); return; }
+            const paymentStatus = modal.querySelector('input[name="purchase-payment-method"]:checked').value === 'transfer' 
+                ? 'Pendiente de transferencia' 
+                : 'Pago en sitio';
+
+            if (!clientName || !clientEmail || !clientPhone) {
+                alert('Todos los campos son requeridos.');
+                return;
+            }
+            if (!/\S+@\S+\.\S+/.test(clientEmail)) {
+                 alert('Por favor, introduce un correo electrónico válido.');
+                 return;
+            }
             
-            confirmBtn.disabled = true; confirmBtn.textContent = 'Procesando...';
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Procesando...';
 
             try {
-                const res = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone }) });
+                const payload = { action: 'purchasePackage', packageId: pkg.id, clientName, clientEmail, clientPhone, paymentStatus };
+                const res = await fetch(API_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload) });
                 const result = await res.json();
+
                 if (result.status !== 'success') throw new Error(result.message);
                 
+                // Guardamos los datos en la sesión para que pueda agendar de inmediato
                 sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedPackages }));
+                
                 form.style.display = 'none';
-                msg.textContent = "¡Gracias por tu compra! Serás redirigido al área de cliente.";
-                msg.className = 'success-message'; msg.style.display = 'block';
-                setTimeout(() => { modal.style.display = 'none'; navigateTo(`?view=my-packages`); }, 4000);
+                msgEl.textContent = result.message; // Usamos el mensaje del backend
+                msgEl.className = 'success-message';
+                msgEl.style.display = 'block';
+                
+                // Redirigimos al área de cliente para que pueda agendar
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    navigateTo(`?view=my-packages`);
+                }, 4000);
+
             } catch (error) {
-                msg.textContent = `Error: ${error.message}`; msg.className = 'error-message'; msg.style.display = 'block';
-                confirmBtn.disabled = false; confirmBtn.textContent = 'Confirmar Compra';
+                msgEl.textContent = `Error: ${error.message}`;
+                msgEl.className = 'error-message';
+                msgEl.style.display = 'block';
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Intentar de Nuevo';
             }
         };
     }
-  
+
     // =================================================================
     // LÓGICA DEL ÁREA DE CLIENTE
     // =================================================================
@@ -507,3 +547,4 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
     window.addEventListener('popstate', router);
 });
+
