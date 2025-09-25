@@ -2,10 +2,11 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   11.0 (Final y Estable)
+ * @version   13.0 (Final con Ajustes de Layout y Formularios)
  * @fecha     25 de Septiembre, 2025
- * @desc      Hoja de estilos completa, incluyendo todas las mejoras
- * de UI para el layout, formularios y códigos de descuento.
+ * @desc      Hoja de estilos completa y final. Incluye las
+ * correcciones para la vista de detalle y la alineación
+ * de los botones de pago.
  * =================================================================
  */
 
@@ -161,34 +162,34 @@ body {
 }
 
 /* =================================================================
-   5. VISTA DE DETALLE (SERVICIO Y PAQUETE)
+   5. VISTA DE DETALLE (SERVICIO Y PAQUETE) - ¡CORREGIDO!
    ================================================================= */
 .service-detail-card {
   background-color: var(--white);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  display: block; /* Por defecto para móviles, imagen arriba */
+  display: flex;
+  flex-direction: column; /* Apila los elementos verticalmente (imagen arriba, info abajo) */
+  align-items: center; /* Centra los elementos horizontalmente en el contenedor */
 }
 
-/* En pantallas más grandes (escritorio), usamos un grid para las columnas */
-@media (min-width: 768px) {
-  .service-detail-card {
-    display: grid;
-    grid-template-columns: 30% 70%; /* Imagen 30%, Info 70% */
-  }
+.service-gallery {
+  width: 90%; /* La imagen ocupa el 90% del ancho de la tarjeta */
+  max-width: 500px; /* Un tope para que no sea demasiado ancha en pantallas grandes */
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .service-gallery .service-main-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto; /* La altura se ajusta automáticamente para mantener la proporción */
   display: block;
-  min-height: 300px;
 }
 
 .service-info {
-  width: 100%;
+  width: 100%; /* La sección de información ocupa todo el ancho de la tarjeta */
   padding: 30px;
 }
 
@@ -303,7 +304,7 @@ body {
 }
 
 /* =================================================================
-   7. MODALES (RESERVA, COMPRA Y DESCUENTOS)
+   7. MODALES (RESERVA, COMPRA Y DESCUENTOS) - ¡CON CAMBIOS!
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -350,17 +351,20 @@ body {
 .payment-options {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 10px; /* Espacio entre cada opción de pago */
 }
 
 .payment-options label {
-  display: flex;
-  align-items: center;
+  display: flex; /* Activa flexbox para alinear elementos internos */
+  align-items: center; /* Centra verticalmente el botón con el texto */
   cursor: pointer;
 }
 
 .payment-options input[type="radio"] {
-  margin-right: 8px;
+  margin-right: 8px; /* Espacio entre el botón y la etiqueta de texto */
+  /* Ajustes para que el botón se vea mejor */
+  width: 1.1em;
+  height: 1.1em;
 }
 
 #transfer-details, #purchase-transfer-details {
