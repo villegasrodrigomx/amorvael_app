@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMOR VAEL Beauty SPA, nails & lashes</title>
-
-    <link rel="stylesheet" href="style.css?v=250924.6">
-
+    <link rel="stylesheet" href="style.css?v=1.7">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 <body>
-
     <header class="main-header">
         <a href="#" onclick="window.location.href=window.location.pathname; return false;">
             <h1>AMOR VAEL Beauty SPA, nails & lashes</h1>
@@ -125,40 +122,12 @@
         <div class="modal-content">
             <button class="close-modal-btn" id="close-modal">&times;</button>
             <h3 id="modal-title"></h3>
-            <div class="booking-summary">
-                <p><strong>Servicio:</strong> <span id="modal-service-name"></span></p>
-                <p><strong>Fecha:</strong> <span id="modal-date"></span></p>
-                <p><strong>Hora:</strong> <span id="modal-time"></span></p>
-                <p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p>
-                <p><strong>Precio:</strong> <span id="modal-price"></span></p>
-            </div>
+            <div class="booking-summary"><p><strong>Servicio:</strong> <span id="modal-service-name"></span></p><p><strong>Fecha:</strong> <span id="modal-date"></span></p><p><strong>Hora:</strong> <span id="modal-time"></span></p><p><strong>Especialista:</strong> <span id="modal-specialist-name"></span></p><p><strong>Precio:</strong> <span id="modal-price"></span></p></div>
             <div class="booking-form">
-                <div class="client-inputs">
-                    <div class="form-group"><label for="clientName">Nombre Completo (Requerido):</label><input type="text" id="clientName" required></div>
-                    <div class="form-group"><label for="clientEmail">Correo (Requerido):</label><input type="email" id="clientEmail" required></div>
-                    <div class="form-group"><label for="clientPhone">Celular (Requerido):</label><input type="tel" id="clientPhone" required></div>
-                </div>
-                <div class="discount-section">
-                    <div class="form-group">
-                        <label for="booking-discount-code">Código de Descuento:</label>
-                        <div class="discount-input-group">
-                            <input type="text" id="booking-discount-code" placeholder="Ej: PROMO25">
-                            <button id="apply-booking-discount-btn">Aplicar</button>
-                        </div>
-                    </div>
-                    <div id="booking-discount-message"></div>
-                </div>
-                <div id="payment-options-section" class="form-group">
-                    <label>¿Cómo te gustaría pagar?</label>
-                    <div class="payment-options">
-                        <label><input type="radio" name="payment-method" value="transfer" checked> Transferencia</label>
-                        <label><input type="radio" name="payment-method" value="cash"> Pagar en spa</label>
-                    </div>
-                </div>
-                <div id="transfer-details" style="display: none;">
-                    <p>Para confirmar, envía tu comprobante a nuestro WhatsApp: <strong>984 234 3935</strong></p>
-                    <p><strong>Banco:</strong> NU México<br><strong>CLABE:</strong> 638180010101648038<br><strong>Titular:</strong> Ana Paula Ortiz Morales</p>
-                </div>
+                <div class="client-inputs"><div class="form-group"><label for="clientName">Nombre Completo (Requerido):</label><input type="text" id="clientName" required></div><div class="form-group"><label for="clientEmail">Correo (Requerido):</label><input type="email" id="clientEmail" required></div><div class="form-group"><label for="clientPhone">Celular (Requerido):</label><input type="tel" id="clientPhone" required></div></div>
+                <div class="discount-section"><div class="form-group"><label for="booking-discount-code">Código de Descuento:</label><div class="discount-input-group"><input type="text" id="booking-discount-code" placeholder="Ej: PROMO25"><button id="apply-booking-discount-btn">Aplicar</button></div></div><div id="booking-discount-message"></div></div>
+                <div id="payment-options-section" class="form-group"><label>¿Cómo te gustaría pagar?</label><div class="payment-options"><label><input type="radio" name="payment-method" value="transfer" checked> Transferencia</label><label><input type="radio" name="payment-method" value="cash"> Pagar en spa</label></div></div>
+                <div id="transfer-details" style="display: none;"><p>Para confirmar, envía tu comprobante a nuestro WhatsApp: <strong>984 234 3935</strong></p><p><strong>Banco:</strong> NU México<br><strong>CLABE:</strong> 638180010101648038<br><strong>Titular:</strong> Ana Paula Ortiz Morales</p></div>
                 <button id="confirm-booking-btn" class="cta-button">Confirmar Cita</button>
             </div>
             <div id="modal-message" style="display: none;"></div>
@@ -169,44 +138,17 @@
         <div class="modal-content">
             <button class="close-modal-btn" id="close-purchase-modal">&times;</button>
             <h3 id="purchase-modal-title"></h3>
-            <div class="booking-summary">
-                 <p><strong>Precio:</strong> <span id="purchase-modal-price"></span></p>
-            </div>
-            <div class="purchase-form">
-                <p>Completa tus datos y elige un método de pago.</p>
-                <div class="client-inputs">
-                    <div class="form-group"><label for="purchase-clientName">Nombre Completo (Requerido):</label><input type="text" id="purchase-clientName" required></div>
-                    <div class="form-group"><label for="purchase-clientEmail">Correo (Requerido):</label><input type="email" id="purchase-clientEmail" required></div>
-                    <div class="form-group"><label for="purchase-clientPhone">Celular (Requerido):</label><input type="tel" id="purchase-clientPhone" required></div>
-                </div>
-                <div class="discount-section">
-                    <div class="form-group">
-                        <label for="purchase-discount-code">Código de Descuento:</label>
-                        <div class="discount-input-group">
-                            <input type="text" id="purchase-discount-code" placeholder="Ej: PROMO25">
-                            <button id="apply-purchase-discount-btn">Aplicar</button>
-                        </div>
-                    </div>
-                    <div id="purchase-discount-message"></div>
-                </div>
-                <div class="form-group">
-                    <label>¿Cómo te gustaría pagar?</label>
-                    <div class="payment-options">
-                        <label><input type="radio" name="purchase-payment-method" value="transfer" checked> Transferencia</label>
-                        <label><input type="radio" name="purchase-payment-method" value="cash"> Pagar en el spa</label>
-                    </div>
-                </div>
-                <div id="purchase-transfer-details" style="display: none;">
-                    <p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp: <strong>984 234 3935</strong></p>
-                    <p><strong>Banco:</strong> NU México<br><strong>CLABE:</strong> 638180010101648038<br><strong>Titular:</strong> Ana Paula Ortiz Morales</p>
-                </div>
+            <div class="booking-summary"><p><strong>Precio:</strong> <span id="purchase-modal-price"></span></p></div>
+            <div class="purchase-form"><p>Completa tus datos y elige un método de pago.</p><div class="client-inputs"><div class="form-group"><label for="purchase-clientName">Nombre Completo (Requerido):</label><input type="text" id="purchase-clientName" required></div><div class="form-group"><label for="purchase-clientEmail">Correo (Requerido):</label><input type="email" id="purchase-clientEmail" required></div><div class="form-group"><label for="purchase-clientPhone">Celular (Requerido):</label><input type="tel" id="purchase-clientPhone" required></div></div>
+                <div class="discount-section"><div class="form-group"><label for="purchase-discount-code">Código de Descuento:</label><div class="discount-input-group"><input type="text" id="purchase-discount-code" placeholder="Ej: PROMO25"><button id="apply-purchase-discount-btn">Aplicar</button></div></div><div id="purchase-discount-message"></div></div>
+                <div class="form-group"><label>¿Cómo te gustaría pagar?</label><div class="payment-options"><label><input type="radio" name="purchase-payment-method" value="transfer" checked> Transferencia</label><label><input type="radio" name="purchase-payment-method" value="cash"> Pagar en el spa</label></div></div>
+                <div id="purchase-transfer-details" style="display: none;"><p>Para confirmar, por favor realiza la transferencia y envía tu comprobante a nuestro WhatsApp: <strong>984 234 3935</strong></p><p><strong>Banco:</strong> NU México<br><strong>CLABE:</strong> 638180010101648038<br><strong>Titular:</strong> Ana Paula Ortiz Morales</p></div>
                 <button id="confirm-purchase-btn" class="cta-button">Confirmar Compra</button>
             </div>
             <div id="purchase-modal-message" style="display: none;"></div>
         </div>
     </div>
 
-    <script src="app.js?v=250924.6"></script>
-
+    <script src="app.js?v=1.7"></script>
 </body>
 </html>
