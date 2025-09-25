@@ -2,11 +2,10 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   13.0 (Final con Ajustes de Layout y Formularios)
+ * @version   14.0 (Ajuste Final de Layout de Imagen)
  * @fecha     25 de Septiembre, 2025
- * @desc      Hoja de estilos completa y final. Incluye las
- * correcciones para la vista de detalle y la alineación
- * de los botones de pago.
+ * @desc      Hoja de estilos completa y final con el layout de la
+ * vista de detalle corregido según las especificaciones.
  * =================================================================
  */
 
@@ -170,27 +169,29 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
   display: flex;
-  flex-direction: column; /* Apila los elementos verticalmente (imagen arriba, info abajo) */
-  align-items: center; /* Centra los elementos horizontalmente en el contenedor */
+  flex-direction: column;   /* Apila los elementos verticalmente */
+  align-items: center;      /* Centra los elementos horizontalmente */
+  padding: 20px 0;          /* Espacio vertical interno */
 }
 
 .service-gallery {
-  width: 90%; /* La imagen ocupa el 90% del ancho de la tarjeta */
-  max-width: 500px; /* Un tope para que no sea demasiado ancha en pantallas grandes */
-  margin-top: 20px;
+  width: 30%;              /* <-- La imagen ocupa el 30% del contenedor */
+  min-width: 280px;         /* Un ancho mínimo para evitar que sea muy pequeña */
   border-radius: 8px;
   overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); /* Sombra sutil para la imagen */
 }
 
 .service-gallery .service-main-image {
   width: 100%;
-  height: auto; /* La altura se ajusta automáticamente para mantener la proporción */
+  height: auto;
   display: block;
 }
 
 .service-info {
-  width: 100%; /* La sección de información ocupa todo el ancho de la tarjeta */
-  padding: 30px;
+  width: 90%;               /* <-- El texto ocupa el 90% del contenedor */
+  padding: 30px 0 0 0;      /* Espacio arriba del texto, sin padding lateral */
+  max-width: 100%;
 }
 
 .service-price {
@@ -304,7 +305,7 @@ body {
 }
 
 /* =================================================================
-   7. MODALES (RESERVA, COMPRA Y DESCUENTOS) - ¡CON CAMBIOS!
+   7. MODALES (RESERVA, COMPRA Y DESCUENTOS)
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -351,18 +352,17 @@ body {
 .payment-options {
   display: flex;
   flex-direction: column;
-  gap: 10px; /* Espacio entre cada opción de pago */
+  gap: 10px;
 }
 
 .payment-options label {
-  display: flex; /* Activa flexbox para alinear elementos internos */
-  align-items: center; /* Centra verticalmente el botón con el texto */
+  display: flex;
+  align-items: center;
   cursor: pointer;
 }
 
 .payment-options input[type="radio"] {
-  margin-right: 8px; /* Espacio entre el botón y la etiqueta de texto */
-  /* Ajustes para que el botón se vea mejor */
+  margin-right: 8px;
   width: 1.1em;
   height: 1.1em;
 }
