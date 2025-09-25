@@ -2,10 +2,10 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   9.0 (Estable)
+ * @version   10.0 (Estable con Códigos de Descuento)
  * @fecha     24 de Septiembre, 2025
  * @desc      Hoja de estilos completa, incluyendo todas las mejoras
- * de UI para el layout y los formularios de pago.
+ * de UI para el layout, formularios y códigos de descuento.
  * =================================================================
  */
 
@@ -22,6 +22,7 @@
   --border-color: #EAEAEA;
   --error-color: #dc3545;
   --success-color: #155724;
+  --info-color: #004085;
 }
 
 * {
@@ -167,23 +168,23 @@ body {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: block; /* Por defecto para móviles, imagen arriba */
 }
 
-.service-gallery {
-  width: 90%;
-  max-width: 500px;
-  margin-top: 20px;
-  border-radius: 8px;
-  overflow: hidden;
+/* En pantallas más grandes (escritorio), usamos un grid para las columnas */
+@media (min-width: 768px) {
+  .service-detail-card {
+    display: grid;
+    grid-template-columns: 30% 70%; /* Imagen 30%, Info 70% */
+  }
 }
 
 .service-gallery .service-main-image {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
   display: block;
+  min-height: 300px;
 }
 
 .service-info {
@@ -302,7 +303,7 @@ body {
 }
 
 /* =================================================================
-   7. MODALES (RESERVA Y COMPRA)
+   7. MODALES (RESERVA, COMPRA Y DESCUENTOS)
    ================================================================= */
 .modal-overlay {
   position: fixed;
@@ -371,6 +372,57 @@ body {
   font-size: 0.9em;
 }
 
+.discount-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
+}
+
+.discount-input-group {
+  display: flex;
+}
+
+.discount-input-group input {
+  flex-grow: 1;
+  border-radius: 8px 0 0 8px;
+  border-right: none;
+}
+.discount-input-group input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.discount-input-group button {
+  padding: 10px 15px;
+  border: 1px solid var(--primary-color);
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+.discount-input-group button:hover {
+  background-color: var(--secondary-color);
+}
+
+#booking-discount-message, #purchase-discount-message {
+  margin-top: 10px;
+  font-weight: 500;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.new-price {
+  color: var(--success-color);
+  font-weight: bold;
+}
+s {
+  color: var(--text-light);
+  font-weight: normal;
+  margin-right: 8px;
+}
+
 /* =================================================================
    8. ÁREA DE CLIENTE
    ================================================================= */
@@ -420,19 +472,25 @@ body {
 
 .error-message {
   color: var(--error-color);
-  text-align: center;
-  padding: 15px;
-  border: 1px solid var(--error-color);
   background-color: #fddede;
-  border-radius: 8px;
+  border: 1px solid #f5c6cb;
 }
 
 .success-message {
   color: var(--success-color);
-  text-align: center;
-  padding: 15px;
-  border: 1px solid #c3e6cb;
   background-color: #d4edda;
+  border: 1px solid #c3e6cb;
+}
+
+.info-message {
+  color: var(--info-color);
+  background-color: #cce5ff;
+  border: 1px solid #b8daff;
+}
+
+#booking-discount-message, #purchase-discount-message, .error-message, .success-message {
+  text-align: center;
+  padding: 10px 15px;
   border-radius: 8px;
 }
 
