@@ -2,8 +2,8 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   10.0 (Estable con Códigos de Descuento)
- * @fecha     24 de Septiembre, 2025
+ * @version   11.0 (Final y Estable)
+ * @fecha     25 de Septiembre, 2025
  * @desc      Hoja de estilos completa, incluyendo todas las mejoras
  * de UI para el layout, formularios y códigos de descuento.
  * =================================================================
@@ -488,7 +488,7 @@ s {
   border: 1px solid #b8daff;
 }
 
-#booking-discount-message, #purchase-discount-message, .error-message, .success-message {
+#booking-discount-message, #purchase-discount-message, .error-message, .success-message, .info-message {
   text-align: center;
   padding: 10px 15px;
   border-radius: 8px;
