@@ -358,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmBtn.disabled = false;
         confirmBtn.textContent = 'Confirmar Compra';
         
-        // Lógica para mostrar/ocultar detalles de transferencia
+        // --- ¡LÓGICA AÑADIDA! ---
         const transferDetails = modal.querySelector('#purchase-transfer-details');
         const updatePaymentView = () => {
             const method = modal.querySelector('input[name="purchase-payment-method"]:checked')?.value;
@@ -366,7 +366,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         modal.querySelectorAll('input[name="purchase-payment-method"]').forEach(radio => radio.onchange = updatePaymentView);
         modal.querySelector('input[value="transfer"]').checked = true;
-        updatePaymentView();
+        updatePaymentView(); // Ejecutar una vez para establecer el estado inicial
 
         modal.style.display = 'flex';
         modal.querySelector('#close-purchase-modal').onclick = () => modal.style.display = 'none';
@@ -398,15 +398,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (result.status !== 'success') throw new Error(result.message);
                 
-                // Guardamos los datos en la sesión para que pueda agendar de inmediato
                 sessionStorage.setItem('amorVaelClientData', JSON.stringify({ email: clientEmail, packages: result.updatedPackages }));
                 
                 form.style.display = 'none';
-                msgEl.textContent = result.message; // Usamos el mensaje del backend
+                msgEl.textContent = result.message;
                 msgEl.className = 'success-message';
                 msgEl.style.display = 'block';
                 
-                // Redirigimos al área de cliente para que pueda agendar
                 setTimeout(() => {
                     modal.style.display = 'none';
                     navigateTo(`?view=my-packages`);
@@ -547,5 +545,6 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
     window.addEventListener('popstate', router);
 });
+
 
 
