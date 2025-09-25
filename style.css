@@ -1,6 +1,12 @@
 /**
- * Motor de Citas Amor-Vael - style.css
- * Versión 7.0 (Ajuste Final de Layout en Vista de Detalle)
+ * =================================================================
+ * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
+ * =================================================================
+ * @version   9.0 (Estable)
+ * @fecha     24 de Septiembre, 2025
+ * @desc      Hoja de estilos completa, incluyendo todas las mejoras
+ * de UI para el layout y los formularios de pago.
+ * =================================================================
  */
 
 /* =================================================================
@@ -51,6 +57,7 @@ body {
   font-size: 1.5em;
   color: var(--secondary-color);
   font-weight: 400;
+  letter-spacing: 0.5px;
 }
 
 .back-link {
@@ -153,21 +160,21 @@ body {
 }
 
 /* =================================================================
-   5. VISTA DE DETALLE (SERVICIO Y PAQUETE) - ¡CON CAMBIOS!
+   5. VISTA DE DETALLE (SERVICIO Y PAQUETE)
    ================================================================= */
 .service-detail-card {
   background-color: var(--white);
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-  display: flex; /* Usamos flexbox para el layout vertical */
-  flex-direction: column; /* Apilamos los elementos verticalmente */
-  align-items: center; /* Centramos los elementos horizontalmente */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .service-gallery {
-  width: 30%; /* La imagen ocupa el 90% del contenedor */
-  max-width: 500px; /* Un máximo para que no sea gigante en pantallas grandes */
+  width: 90%;
+  max-width: 500px;
   margin-top: 20px;
   border-radius: 8px;
   overflow: hidden;
@@ -175,12 +182,12 @@ body {
 
 .service-gallery .service-main-image {
   width: 100%;
-  height: auto; /* La altura se ajusta a la proporción */
+  height: auto;
   display: block;
 }
 
 .service-info {
-  width: 100%; /* La sección de info ocupa todo el ancho */
+  width: 100%;
   padding: 30px;
 }
 
@@ -329,7 +336,7 @@ body {
 }
 
 .booking-summary p { margin: 5px 0; }
-.booking-form { margin-top: 20px; }
+.booking-form, .purchase-form { margin-top: 20px; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
 .form-group input {
@@ -339,8 +346,23 @@ body {
   border-radius: 8px;
 }
 
-.payment-options label { margin-right: 15px; }
-#transfer-details {
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.payment-options label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.payment-options input[type="radio"] {
+  margin-right: 8px;
+}
+
+#transfer-details, #purchase-transfer-details {
   background-color: #f9f9f9;
   border: 1px solid var(--border-color);
   padding: 15px;
@@ -437,5 +459,3 @@ body {
   background-color: #ccc;
   cursor: not-allowed;
 }
-
-
