@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AMOR VAEL Beauty SPA, nails & lashes</title>
 
-    <link rel="stylesheet" href="style.css?v=250924.5">
+    <link rel="stylesheet" href="style.css?v=250924.6">
 
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
@@ -138,6 +138,16 @@
                     <div class="form-group"><label for="clientEmail">Correo (Requerido):</label><input type="email" id="clientEmail" required></div>
                     <div class="form-group"><label for="clientPhone">Celular (Requerido):</label><input type="tel" id="clientPhone" required></div>
                 </div>
+                <div class="discount-section">
+                    <div class="form-group">
+                        <label for="booking-discount-code">Código de Descuento:</label>
+                        <div class="discount-input-group">
+                            <input type="text" id="booking-discount-code" placeholder="Ej: PROMO25">
+                            <button id="apply-booking-discount-btn">Aplicar</button>
+                        </div>
+                    </div>
+                    <div id="booking-discount-message"></div>
+                </div>
                 <div id="payment-options-section" class="form-group">
                     <label>¿Cómo te gustaría pagar?</label>
                     <div class="payment-options">
@@ -169,6 +179,16 @@
                     <div class="form-group"><label for="purchase-clientEmail">Correo (Requerido):</label><input type="email" id="purchase-clientEmail" required></div>
                     <div class="form-group"><label for="purchase-clientPhone">Celular (Requerido):</label><input type="tel" id="purchase-clientPhone" required></div>
                 </div>
+                <div class="discount-section">
+                    <div class="form-group">
+                        <label for="purchase-discount-code">Código de Descuento:</label>
+                        <div class="discount-input-group">
+                            <input type="text" id="purchase-discount-code" placeholder="Ej: PROMO25">
+                            <button id="apply-purchase-discount-btn">Aplicar</button>
+                        </div>
+                    </div>
+                    <div id="purchase-discount-message"></div>
+                </div>
                 <div class="form-group">
                     <label>¿Cómo te gustaría pagar?</label>
                     <div class="payment-options">
@@ -186,7 +206,7 @@
         </div>
     </div>
 
-    <script src="app.js?v=250924.5"></script>
+    <script src="app.js?v=250924.6"></script>
 
 </body>
 </html>
