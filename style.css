@@ -2,15 +2,15 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   14.0 (Ajuste Final de Layout de Imagen)
- * @fecha     25 de Septiembre, 2025
- * @desc      Hoja de estilos completa y final con el layout de la
- * vista de detalle corregido según las especificaciones.
+ * @version   15.0 (Tipografía de Marca "Birthstone Bounce")
+ * @fecha     26 de Septiembre, 2025
+ * @desc      Hoja de estilos completa con la tipografía del
+ * título personalizada.
  * =================================================================
  */
 
 /* =================================================================
-   1. VARIABLES Y ESTILOS BASE
+   1. VARIABLES Y ESTILOS BASE - ¡CON CAMBIOS!
    ================================================================= */
 :root {
   --primary-color: #E5A1AA;
@@ -23,11 +23,13 @@
   --error-color: #dc3545;
   --success-color: #155724;
   --info-color: #004085;
+  /* Se definen las nuevas familias de fuentes */
+  --font-body: 'Montserrat', sans-serif;
+  --font-heading: 'Birthstone Bounce', cursive; /* <-- ¡NUEVA FUENTE! */
 }
 
 * {
   box-sizing: border-box;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
@@ -35,16 +37,11 @@ body {
   color: var(--text-color);
   margin: 0;
   line-height: 1.6;
-}
-
-.container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 20px;
+  font-family: var(--font-body); /* Aplicamos la fuente base al cuerpo */
 }
 
 /* =================================================================
-   2. ENCABEZADO Y NAVEGACIÓN
+   2. ENCABEZADO Y NAVEGACIÓN - ¡CON CAMBIOS!
    ================================================================= */
 .main-header {
   text-align: center;
@@ -55,10 +52,11 @@ body {
 
 .main-header h1 {
   margin: 0;
-  font-size: 1.5em;
+  font-family: var(--font-heading); /* Aplicamos la nueva fuente al título */
+  font-size: 2.8em; /* Ajustamos el tamaño para que luzca bien */
   color: var(--secondary-color);
-  font-weight: 400;
-  letter-spacing: 0.5px;
+  font-weight: 500; /* Usamos el grosor que importamos */
+  line-height: 1.2; /* Mejoramos el interlineado */
 }
 
 .back-link {
@@ -521,3 +519,4 @@ s {
   background-color: #ccc;
   cursor: not-allowed;
 }
+
