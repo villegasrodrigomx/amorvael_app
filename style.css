@@ -2,16 +2,14 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   15.0 (Final y Estable con todos los ajustes de UI)
- * @fecha     26 de Septiembre, 2025
- * @desc      Hoja de estilos completa y final. Incluye el layout de
- * detalle, tipografías de marca, botones dorados y todas las
- * correcciones de formato.
+ * @version   15.0 (Ajustes Finales de Marca y Estilo)
+ * @desc      Hoja de estilos final con correcciones de layout,
+ * nueva tipografía en subtítulo y botones dorados.
  * =================================================================
  */
 
 /* =================================================================
-   1. VARIABLES, TIPOGRAFÍAS Y ESTILOS BASE
+   1. VARIABLES Y ESTILOS BASE
    ================================================================= */
 :root {
   --primary-color: #E5A1AA;
@@ -71,10 +69,10 @@ body {
 
 .header-subtitle {
   margin-top: 5px;
-  font-family: var(--font-heading);
-  font-size: 1.8em;
+  font-family: var(--font-heading); /* Tipografía especial */
+  font-size: 1.8em;                 /* Tamaño aumentado */
   font-weight: 500;
-  color: var(--gold-color);
+  color: var(--gold-color);        /* Color dorado */
   letter-spacing: 0.5px;
 }
 
@@ -418,33 +416,13 @@ s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
 .client-package-card h4 { margin: 0 0 10px 0; font-weight: 500; }
 
 /* =================================================================
-   9. UTILIDADES (LOADING, ERRORES, BOTONES)
+   9. UTILIDADES (BOTONES DORADOS)
    ================================================================= */
-.loading-spinner {
-  border: 4px solid var(--border-color);
-  border-top: 4px solid var(--primary-color);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  animation: spin 1s linear infinite;
-  margin: 50px auto;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.error-message { color: var(--error-color); background-color: #fddede; border: 1px solid #f5c6cb; }
-.success-message { color: var(--success-color); background-color: #d4edda; border: 1px solid #c3e6cb; }
-.info-message { color: var(--info-color); background-color: #cce5ff; border: 1px solid #b8daff; }
-#booking-discount-message, #purchase-discount-message, .error-message, .success-message, .info-message {
-  text-align: center;
-  padding: 10px 15px;
-  border-radius: 8px;
-}
-
 .cta-button {
   display: block;
   width: 100%;
   padding: 15px;
-  background-color: var(--gold-color);
+  background-color: var(--gold-color); /* <-- BOTÓN DORADO */
   color: var(--white);
   border: none;
   border-radius: 8px;
@@ -456,10 +434,5 @@ s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
 }
 
 .cta-button:hover {
-  background-color: var(--gold-darker);
-}
-
-.cta-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  background-color: var(--gold-darker); /* <-- HOVER DORADO OSCURO */
 }
