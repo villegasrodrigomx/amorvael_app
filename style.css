@@ -2,36 +2,26 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   16.0 (Final y Estable con todos los ajustes de UI)
- * @fecha     26 de Septiembre, 2025
- * @desc      Hoja de estilos completa y final. Incluye el layout de
- * detalle, tipografías de marca, botones dorados y todas las
- * correcciones de formato.
+ * @version   15.0 (Header con Logo y Ajuste Final de Layout)
  * =================================================================
  */
 
 /* =================================================================
-   1. VARIABLES, TIPOGRAFÍAS Y ESTILOS BASE
+   1. VARIABLES Y ESTILOS BASE
    ================================================================= */
 :root {
   --primary-color: #E5A1AA;
   --secondary-color: #B4869F;
   --gold-color: #D2AE6D;      /* Color dorado de la marca */
-  --gold-darker: #c59d5f;   /* Tono más oscuro para el hover del botón */
   --text-color: #4A4A4A;
-  --text-light: #888;
   --bg-color: #FFF8F7;
   --white: #FFFFFF;
   --border-color: #EAEAEA;
-  --error-color: #dc3545;
-  --success-color: #155724;
-  --info-color: #004085;
-  --font-body: 'Montserrat', sans-serif;
-  --font-heading: 'Birthstone Bounce', cursive;
 }
 
 * {
   box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 body {
@@ -39,7 +29,6 @@ body {
   color: var(--text-color);
   margin: 0;
   line-height: 1.6;
-  font-family: var(--font-body);
 }
 
 .container {
@@ -49,21 +38,21 @@ body {
 }
 
 /* =================================================================
-   2. ENCABEZADO Y NAVEGACIÓN
+   2. ENCABEZADO Y NAVEGACIÓN - ¡CON CAMBIOS!
    ================================================================= */
 .main-header {
   text-align: center;
   padding: 20px;
   background-color: var(--white);
-  border-bottom: none;
+  border-bottom: none; /* Se elimina la línea de abajo */
 }
 
 .main-header a {
-  text-decoration: none;
+    text-decoration: none;
 }
 
 .header-logo {
-  max-width: 350px;
+  max-width: 350px; /* Ajusta el tamaño máximo del logo */
   height: auto;
   display: block;
   margin: 0 auto;
@@ -71,10 +60,9 @@ body {
 
 .header-subtitle {
   margin-top: 5px;
-  font-family: var(--font-heading);
-  font-size: 1.8em;
+  font-size: 0.9em; /* Aproximadamente 70% del tamaño original */
   font-weight: 500;
-  color: var(--gold-color);
+  color: var(--gold-color); /* Aplicamos el color dorado */
   letter-spacing: 0.5px;
 }
 
@@ -463,3 +451,4 @@ s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
   background-color: #ccc;
   cursor: not-allowed;
 }
+
