@@ -2,11 +2,10 @@
  * =================================================================
  * MOTOR DE CITAS AMOR-VAEL - STYLE.CSS
  * =================================================================
- * @version   16.0 (Final y Estable con todos los ajustes de UI)
+ * @version   17.0 (Ajustes Finales de Color de Marca)
  * @fecha     26 de Septiembre, 2025
- * @desc      Hoja de estilos completa y final. Incluye el layout de
- * detalle, tipografías de marca, botones dorados y todas las
- * correcciones de formato.
+ * @desc      Hoja de estilos final con precios y botón de cliente
+ * en color dorado para consistencia de marca.
  * =================================================================
  */
 
@@ -16,8 +15,8 @@
 :root {
   --primary-color: #E5A1AA;
   --secondary-color: #B4869F;
-  --gold-color: #D2AE6D;      /* Color dorado de la marca */
-  --gold-darker: #c59d5f;   /* Tono más oscuro para el hover del botón */
+  --gold-color: #D2AE6D;
+  --gold-darker: #c59d5f;
   --text-color: #4A4A4A;
   --text-light: #888;
   --bg-color: #FFF8F7;
@@ -95,7 +94,7 @@ body {
 }
 
 /* =================================================================
-   3. VISTA DE CATEGORÍAS (FORMATO RESTAURADO)
+   3. VISTA DE CATEGORÍAS
    ================================================================= */
 .category-grid {
   display: grid;
@@ -135,7 +134,7 @@ body {
 }
 
 /* =================================================================
-   4. VISTA DE SERVICIOS (FORMATO RESTAURADO)
+   4. VISTA DE SERVICIOS Y PAQUETES
    ================================================================= */
 .service-list {
   display: flex;
@@ -162,7 +161,7 @@ body {
 .service-card-arrow i { font-size: 1.5em; color: var(--primary-color); }
 
 /* =================================================================
-   5. VISTA DE DETALLE (IMAGEN 30%)
+   5. VISTA DE DETALLE (SERVICIO Y PAQUETE) - ¡CON CAMBIOS!
    ================================================================= */
 .service-detail-card {
   background-color: var(--white);
@@ -198,7 +197,7 @@ body {
 .service-price {
   font-size: 1.5em;
   font-weight: 500;
-  color: var(--primary-color);
+  color: var(--gold-color); /* <-- PRECIOS EN DORADO */
 }
 
 .service-duration, #service-specialists-list {
@@ -385,11 +384,11 @@ body {
 s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
 
 /* =================================================================
-   8. ÁREA DE CLIENTE
+   8. ÁREA DE CLIENTE - ¡CON CAMBIOS!
    ================================================================= */
 #client-area-entry { text-align: center; margin-bottom: 20px; }
 .client-area-link {
-  background: var(--primary-color);
+  background: var(--gold-color); /* <-- BOTÓN DE CLIENTE DORADO */
   color: var(--white);
   padding: 10px 20px;
   border-radius: 8px;
@@ -397,7 +396,7 @@ s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
   display: inline-block;
   transition: background-color 0.2s;
 }
-.client-area-link:hover { background-color: var(--secondary-color); }
+.client-area-link:hover { background-color: var(--gold-darker); }
 
 .login-form {
   background: var(--white);
