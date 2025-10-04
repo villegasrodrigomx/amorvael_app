@@ -607,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
     function getCategoryImage(categoryName) {
-        const images = {'Uñas':'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg','Pestañas':'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg','Masajes':'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg','Faciales':'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'};
+        const images = {'Uñas':'http://amor-vael.com/wp-content/uploads/2025/08/unas.jpeg','Pestañas':'http://amor-vael.com/wp-content/uploads/2025/08/pestanas.jpeg','Masajes':'http://amor-vael.com/wp-content/uploads/2025/08/masajes.jpeg','Tratamientos faciales':'http://amor-vael.com/wp-content/uploads/2025/08/faciales.jpeg'};
         return images[categoryName] || 'https://placehold.co/600x400/E5A1AA/FFFFFF?text=Amor-Vael';
     }
   
@@ -624,3 +624,4 @@ document.addEventListener('DOMContentLoaded', () => {
     router();
     window.addEventListener('popstate', router);
 });
+
