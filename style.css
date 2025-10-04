@@ -62,7 +62,7 @@ body {
 }
 
 .header-logo {
-  max-width: 350px;
+  max-width: 300px;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -462,3 +462,4 @@ s { color: var(--text-light); font-weight: normal; margin-right: 8px; }
   background-color: #ccc;
   cursor: not-allowed;
 }
+
